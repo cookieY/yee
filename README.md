@@ -17,7 +17,7 @@ Yee is available as a Go module. You need to use Go 1.1.3 +
 
 ## Example
 
-```
+```go
  	r := yee.New()
 
       r.GET("/", func(c yee.Context) error {
