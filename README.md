@@ -20,11 +20,11 @@ Yee is available as a Go module. You need to use Go 1.1.3 +
 ```go
  	r := yee.New()
 
-      r.GET("/", func(c yee.Context) error {
+        r.GET("/", func(c yee.Context) error {
 		return c.String(http.StatusOK, "<h1>Hello Gee</h1>")
 	})
 
-      r.Static("/assets", "dist/assets")
+        r.Static("/assets", "dist/assets")
 
 	r.GET("/", func(c yee.Context) (err error) {
 		return c.HTMLTml(http.StatusOK, "dist/index.html")
