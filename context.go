@@ -1,11 +1,13 @@
-package knocker
+package yee
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 )
 
 type Context interface {
@@ -18,6 +20,8 @@ type Context interface {
 	QueryParam(name string) string
 	QueryString() string
 	SetHeader(key string, value string)
+	AddHeader(key string, value string)
+	GetHeader(key string) string
 	FormValue(name string) string
 	FormParams() (url.Values, error)
 	FormFile(name string) (*multipart.FileHeader, error)
@@ -28,6 +32,13 @@ type Context interface {
 	Scheme() string
 	IsTls() bool
 	Next()
+	HTMLTml(code int, tml string) (err error)
+	QueryParams() map[string][]string
+	Bind(i interface{}) error
+	GetMethod() string
+	Get(key string) interface{}
+	Put(key string, values interface{})
+	MiddError(code int,err error) error
 }
 
 type context struct {
@@ -42,6 +53,11 @@ type context struct {
 	// middleware
 	handlers []HandlerFunc
 	index    int
+	store    map[string]interface{}
+	lock     sync.RWMutex
+	noRewrite bool
+
+	intercept bool
 }
 
 func newContext(w http.ResponseWriter, r *http.Request) *context {
@@ -54,12 +70,41 @@ func newContext(w http.ResponseWriter, r *http.Request) *context {
 	}
 }
 
-func (c *context) Next() {
+func (c *context) Next()  {
 	c.index++
 	s := len(c.handlers)
 	for ; c.index < s; c.index++ {
-		_ = c.handlers[c.index](c)
+		if c.intercept {
+			break
+		}
+		if err := c.handlers[c.index].Func(c);err != nil {
+				c.intercept = true
+		}
 	}
+}
+
+func (c *context) MiddError(code int,err error) error {
+	_ = c.String(code, err.Error())
+	return err
+}
+
+func (c *context) Put(key string, values interface{}) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	if c.store == nil {
+		c.store = make(map[string]interface{})
+	}
+	c.store[key] = values
+}
+
+func (c *context) Get(key string) interface{} {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	return c.store[key]
+}
+
+func (c *context) GetMethod() string {
+	return c.r.Method
 }
 
 func (c *context) Request() *http.Request {
@@ -72,6 +117,14 @@ func (c *context) Response() http.ResponseWriter {
 
 func (c *context) HTML(code int, html string) (err error) {
 	return c.HTMLBlob(code, []byte(html))
+}
+
+func (c *context) HTMLTml(code int, tml string) (err error) {
+	s, e := ioutil.ReadFile(tml)
+	if e != nil {
+		panic(e)
+	}
+	return c.HTMLBlob(code, s)
 }
 
 func (c *context) HTMLBlob(code int, b []byte) (err error) {
@@ -104,9 +157,21 @@ func (c *context) SetHeader(key string, value string) {
 	c.w.Header().Set(key, value)
 }
 
+func (c *context) AddHeader(key string, value string) {
+	c.w.Header().Add(key, value)
+}
+
+func (c *context) GetHeader(key string) string {
+	return c.w.Header().Get(key)
+}
+
 func (c *context) Params(name string) string {
 	v, _ := c.params[name]
 	return v
+}
+
+func (c *context) QueryParams() map[string][]string {
+	return c.r.URL.Query()
 }
 
 func (c *context) QueryParam(name string) string {

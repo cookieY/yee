@@ -1,4 +1,4 @@
-package knocker
+package yee
 
 import (
 	"errors"

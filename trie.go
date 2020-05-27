@@ -1,4 +1,4 @@
-package knocker
+package yee
 
 import (
 	"strings"
@@ -14,19 +14,12 @@ type node struct {
 
 func (n *node) matchChild(part string) *node {
 	for _, child := range n.children {
-		if child.pattern == part || child.isWild {
-			if len(n.part) > 0 {
-				if n.part[0] != ':' {
-					return child
-				}
-			} else {
-				return child
-			}
+		if child.pattern == part  {
+			return child
 		}
 	}
 	return nil
 }
-
 
 func (n *node) matchChildren(part string) []*node {
 	node := make([]*node, 0)
@@ -35,7 +28,24 @@ func (n *node) matchChildren(part string) []*node {
 			node = append(node, child)
 		}
 	}
-	return node
+
+	return clearPriority(node)
+}
+
+func clearPriority(l []*node) []*node {
+	var c []*node
+
+	for _, i := range l {
+		if i.priority == 1 {
+			c = append(c, i)
+		}
+	}
+
+	if len(c) == 0 {
+		return l
+	} else {
+		return c
+	}
 }
 
 func (n *node) insert(pattern string, parts []string, height int) {

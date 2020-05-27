@@ -2,52 +2,57 @@ package testing
 
 import (
 	"fmt"
-	"knocker"
-	"log"
 	"net/http"
 	"testing"
-	"time"
+	"yee"
+	"yee/middleware"
 )
 
-func onlyForV2() knocker.HandlerFunc {
-	return func(c knocker.Context) error {
-		// Start timer
-		t := time.Now()
-		// if a server error occurred
-		c.Status(500)
-		// Calculate resolution time
-		log.Printf("[%d] %s in %v for group v2", 500, c.Scheme(), time.Since(t))
-		return nil
-	}
+type p struct {
+	Test string `json:"test"`
 }
 
 func TestContext(t *testing.T) {
-	r := knocker.New()
-	//r.GET("/", func(c knocker.Context) error {
-	//	return c.String(http.StatusOK, "<h1>Hello Gee</h1>")
-	//})
+	r := yee.New()
+	r.GET("/", func(c yee.Context) error {
+		return c.String(http.StatusOK, "<h1>Hello Gee</h1>")
+	})
+	r.Static("/assets", "dist/assets")
 
-	r.GET("/:test/xxx", func(c knocker.Context) (err error) {
-		j := c.Params("test")
-		x := c.Params("xx")
-		fmt.Println(1)
-		return c.JSON(http.StatusOK, fmt.Sprintf("%s-%s", j, x))
-		//return c.JSON(http.StatusOK, map[string]interface{}{"name":"henry","age": 27})
+	r.GET("/", func(c yee.Context) (err error) {
+		return c.HTMLTml(http.StatusOK, "dist/index.html")
 	})
 
-	r.GET("/b/:name", func(c knocker.Context) (err error) {
+	r.POST("/test", func(c yee.Context) (err error) {
+		u := new(p)
+		if err := c.Bind(u); err != nil {
+			return c.JSON(http.StatusOK, err.Error())
+		}
+		return c.JSON(http.StatusOK, u.Test)
+	})
+
+	//r.GET("/:t/:x", func(c yee.Context) (err error) {
+	//	j := c.Params("t")
+	//	x := c.Params("x")
+	//	fmt.Println(1)
+	//	return c.JSON(http.StatusOK, fmt.Sprintf("%s-%s", j, x))
+	//	//return c.JSON(http.StatusOK, map[string]interface{}{"name":"henry","age": 27})
+	//})
+
+	r.GET("/b/:name", func(c yee.Context) (err error) {
 		j := c.Params("name")
 		fmt.Println(2)
 		return c.JSON(http.StatusOK, j)
 		//return c.JSON(http.StatusOK, map[string]interface{}{"name":"henry","age": 27})
 	})
 
-	//r.Static("/", "dist")
-	//v1 := r.Group("/v1")
-	//v1.Use(middleware.Xss())
-	//v1.GET("/fail", func(c knocker.Context) (err error) {
-	//	return
-	//	//return c.JSON(http.StatusOK, map[string]interface{}{"name":"henry","age": 27})
-	//})
+	v1 := r.Group("/v1")
+	v1.Use(middleware.Secure())
+	v1.Use(middleware.JWTWithConfig(middleware.JwtConfig{SigningKey: "dbcjqheupqjsuwsm"}))
+	//v1.Use(middleware.Cors())
+	v1.GET("/fail", func(c yee.Context) (err error) {
+		return c.String(http.StatusOK, "is_ok")
+		//return c.JSON(http.StatusOK, map[string]interface{}{"name":"henry","age": 27})
+	})
 	_ = r.Start(":9999")
 }

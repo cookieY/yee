@@ -1,4 +1,4 @@
-package knocker
+package yee
 
 import (
 	"fmt"
@@ -42,7 +42,6 @@ func (r *router) addRoute(method, path string, handler HandlerFunc) {
 		r.route[method] = &node{}
 	}
 	r.route[method].insert(path, parts, 0)
-	fmt.Println(r.route["GET"].children[0].part)
 
 	r.handlers[handlePath] = handler
 }
@@ -56,7 +55,7 @@ func (r *router) fetchRoute(method, path string) (*node, map[string]string) {
 	}
 
 	n := root.search(sParts, 0) // 查找子节点node列表 从cn开始
-	if n != nil {  // 如果存在节点返回节点信息以及params
+	if n != nil {               // 如果存在节点返回节点信息以及params
 		parts := parserParts(n.pattern)
 		for idx, part := range parts {
 			if part[0] == ':' {
@@ -66,7 +65,7 @@ func (r *router) fetchRoute(method, path string) (*node, map[string]string) {
 				params[part[1:]] = strings.Join(sParts[idx:], "/")
 				break
 			}
-			if part[0] == '/' && part[1] == '*' && len(part) > 1 {
+			if part[0] == '/' && len(part) > 1 {
 				params["*"] = strings.Join(sParts[idx:], "/")
 				break
 			}
@@ -84,8 +83,11 @@ func (r *router) handle(context *context) {
 		path := fmt.Sprintf("%s-%s", context.method, n.pattern)
 		context.handlers = append(context.handlers, r.handlers[path])
 	} else {
-		context.handlers = append(context.handlers, func(c Context) (err error) {
-			return c.String(http.StatusNotFound, fmt.Sprintf("404 NOT FOUND: %s\n",context.path))
+		context.handlers = append(context.handlers, HandlerFunc{
+			Func: func(c Context) (err error) {
+				return c.String(http.StatusNotFound, fmt.Sprintf("404 NOT FOUND: %s\n", context.path))
+			},
+			IsMiddleware: false,
 		})
 	}
 	context.Next()

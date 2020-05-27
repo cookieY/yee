@@ -2,11 +2,11 @@ package middleware
 
 import (
 	"fmt"
-	"knocker"
 	"log"
 	"net/http"
 	"runtime"
 	"strings"
+	"yee"
 )
 
 func trace(info string) string {
@@ -22,16 +22,19 @@ func trace(info string) string {
 	return str.String()
 }
 
-func Recovery() knocker.HandlerFunc {
-	return func(c knocker.Context) (err error) {
-		defer func() {
-			if err := recover(); err != nil {
-				message := fmt.Sprintf("%s", err)
-				log.Printf("%s", trace(message))
-				_ = c.String(http.StatusInternalServerError, "Internal Server Error")
-			}
-		}()
-		c.Next()
-		return
+func Recovery() yee.HandlerFunc {
+	return yee.HandlerFunc{
+		Func: func(c yee.Context) (err error) {
+			defer func() {
+				if err := recover(); err != nil {
+					message := fmt.Sprintf("%s", err)
+					log.Printf("%s", trace(message))
+					_ = c.String(http.StatusInternalServerError, "Internal Server Error")
+				}
+			}()
+			c.Next()
+			return
+		},
+		IsMiddleware: true,
 	}
 }
