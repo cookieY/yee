@@ -10,7 +10,6 @@ import (
 
 func TestCors(t *testing.T) {
 	y := yee.New()
-
 	y.Use(CorsWithConfig(CORSConfig{
 		Origins:          []string{"*", "yearning.io"},
 		AllowMethods:     []string{http.MethodGet},

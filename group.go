@@ -62,7 +62,7 @@ func (g *group) GET(path string, handler UserFunc) {
 //	g.addRoute(http.MethodOptions, path, HandlerFunc{Func: handler})
 //}
 
-func (g *group) createDistHandler(relativePath string, fs http.FileSystem) UserFunc {
+func (g *group) createDistHandler(relativePath string, fs http.FileSystem) HandlerFunc {
 	ab := path.Join(g.prefix, relativePath)
 	fs_1 := http.StripPrefix(ab, http.FileServer(fs))
 	return func(c Context) (err error) {

@@ -7,7 +7,27 @@ import (
 	"testing"
 )
 
+<<<<<<< HEAD
 func TestDyncRouter(t *testing.T) {
+=======
+func newTestRouter() *router {
+	r := newRouter()
+	r.addRoute("GET", "/",nil)
+	r.addRoute("GET", "/hello/*filepath", nil)
+	r.addRoute("GET", "/:l/b/c", nil)
+	r.addRoute("GET", "/hi/:name", nil)
+	r.addRoute("GET", "/assets/*filepath", nil)
+	return r
+}
+func TestParsePattern(t *testing.T) {
+	ok := reflect.DeepEqual(parserParts("/p/:name"), []string{"p", ":name"})
+	ok = ok && reflect.DeepEqual(parserParts("/p/*"), []string{"p", "*"})
+	ok = ok && reflect.DeepEqual(parserParts("/p/*name/*"), []string{"p", "*name"})
+	if !ok {
+		t.Fatal("test parsePattern failed")
+	}
+}
+>>>>>>> 6f3cf6c96722a3e91bd032293e8a15c1475ddbbb
 
 	y := New()
 
