@@ -38,7 +38,7 @@ type Context interface {
 	GetMethod() string
 	Get(key string) interface{}
 	Put(key string, values interface{})
-	MiddError(code int,err error) error
+	MiddError(code int, err error) error
 }
 
 type context struct {
@@ -51,10 +51,10 @@ type context struct {
 	params    map[string]string
 
 	// middleware
-	handlers []HandlerFunc
-	index    int
-	store    map[string]interface{}
-	lock     sync.RWMutex
+	handlers  []HandlerFunc
+	index     int
+	store     map[string]interface{}
+	lock      sync.RWMutex
 	noRewrite bool
 
 	intercept bool
@@ -70,20 +70,20 @@ func newContext(w http.ResponseWriter, r *http.Request) *context {
 	}
 }
 
-func (c *context) Next()  {
+func (c *context) Next() {
 	c.index++
 	s := len(c.handlers)
 	for ; c.index < s; c.index++ {
 		if c.intercept {
-			break
+			continue
 		}
-		if err := c.handlers[c.index].Func(c);err != nil {
-				c.intercept = true
+		if err := c.handlers[c.index](c); err != nil {
+			c.intercept = true
 		}
 	}
 }
 
-func (c *context) MiddError(code int,err error) error {
+func (c *context) MiddError(code int, err error) error {
 	_ = c.String(code, err.Error())
 	return err
 }

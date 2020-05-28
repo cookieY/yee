@@ -28,7 +28,6 @@ func (n *node) matchChildren(part string) []*node {
 			node = append(node, child)
 		}
 	}
-
 	return clearPriority(node)
 }
 

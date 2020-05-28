@@ -68,26 +68,24 @@ func JWTWithConfig(config JwtConfig) yee.HandlerFunc {
 
 	parts := strings.Split(config.TokenLookup, ":")
 	extractor := jwtFromHeader(parts[1], config.AuthScheme)
-	return yee.HandlerFunc{
-		Func: func(c yee.Context) (err error) {
-			auth, err := extractor(c)
-			if err != nil {
-				return c.MiddError(http.StatusBadRequest, err)
-			}
-			token := new(jwt.Token)
-			if _, ok := config.Claims.(jwt.MapClaims); ok {
-				token, err = jwt.Parse(auth, config.keyFunc)
-			} else {
-				t := reflect.ValueOf(config.Claims).Type().Elem()
-				claims := reflect.New(t).Interface().(jwt.Claims)
-				token, err = jwt.ParseWithClaims(auth, claims, config.keyFunc)
-			}
-			if err == nil && token.Valid {
-				c.Put(config.GetKey, token)
-			}
-			return c.MiddError(http.StatusUnauthorized, errors.New("invalid or expired jwt"))
-		},
-		IsMiddleware: true,
+	return func(c yee.Context) (err error) {
+		auth, err := extractor(c)
+		if err != nil {
+			return c.MiddError(http.StatusBadRequest,err)
+		}
+		token := new(jwt.Token)
+		if _, ok := config.Claims.(jwt.MapClaims); ok {
+			token, err = jwt.Parse(auth, config.keyFunc)
+		} else {
+			t := reflect.ValueOf(config.Claims).Type().Elem()
+			claims := reflect.New(t).Interface().(jwt.Claims)
+			token, err = jwt.ParseWithClaims(auth, claims, nil)
+		}
+		if err == nil && token.Valid {
+			c.Put(config.GetKey, token)
+			return
+		}
+		return
 	}
 
 }

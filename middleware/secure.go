@@ -84,34 +84,30 @@ func Secure() yee.HandlerFunc {
 }
 
 func SecureWithConfig(config SecureConfig) yee.HandlerFunc {
-	return yee.HandlerFunc{
-		Func: func(c yee.Context) (err error) {
+	return func(c yee.Context) (err error) {
 
-			if config.XSSProtection != "" {
-				c.SetHeader(yee.HeaderXXSSProtection, config.XSSProtection)
-			}
+		if config.XSSProtection != "" {
+			c.SetHeader(yee.HeaderXXSSProtection, config.XSSProtection)
+		}
 
-			if config.ContentTypeNosniff != "" {
-				c.SetHeader(yee.HeaderXContentTypeOptions, config.ContentTypeNosniff)
-			}
+		if config.ContentTypeNosniff != "" {
+			c.SetHeader(yee.HeaderXContentTypeOptions, config.ContentTypeNosniff)
+		}
 
-			if config.XFrameOptions != "" {
-				c.SetHeader(yee.HeaderXFrameOptions, config.XFrameOptions)
-			}
+		if config.XFrameOptions != "" {
+			c.SetHeader(yee.HeaderXFrameOptions, config.XFrameOptions)
+		}
 
-			if (c.IsTls() || (c.GetHeader(yee.HeaderXForwardedProto) == "https")) && config.HSTSMaxAge != 0 {
-				subdomains := ""
-				if !config.HSTSExcludeSubdomains {
-					subdomains = "; includeSubdomains"
-				}
-				if config.HSTSPreloadEnabled {
-					subdomains = fmt.Sprintf("%s; preload", subdomains)
-				}
-				c.SetHeader(yee.HeaderStrictTransportSecurity, fmt.Sprintf("max-age=%d%s", config.HSTSMaxAge, subdomains))
+		if (c.IsTls() || (c.GetHeader(yee.HeaderXForwardedProto) == "https")) && config.HSTSMaxAge != 0 {
+			subdomains := ""
+			if !config.HSTSExcludeSubdomains {
+				subdomains = "; includeSubdomains"
 			}
-			c.Next()
-			return
-		},
-		IsMiddleware: true,
+			if config.HSTSPreloadEnabled {
+				subdomains = fmt.Sprintf("%s; preload", subdomains)
+			}
+			c.SetHeader(yee.HeaderStrictTransportSecurity, fmt.Sprintf("max-age=%d%s", config.HSTSMaxAge, subdomains))
+		}
+		return
 	}
 }

@@ -83,11 +83,8 @@ func (r *router) handle(context *context) {
 		path := fmt.Sprintf("%s-%s", context.method, n.pattern)
 		context.handlers = append(context.handlers, r.handlers[path])
 	} else {
-		context.handlers = append(context.handlers, HandlerFunc{
-			Func: func(c Context) (err error) {
-				return c.String(http.StatusNotFound, fmt.Sprintf("404 NOT FOUND: %s\n", context.path))
-			},
-			IsMiddleware: false,
+		context.handlers = append(context.handlers, func(c Context) (err error) {
+			return c.String(http.StatusNotFound, fmt.Sprintf("404 NOT FOUND: %s\n", context.path))
 		})
 	}
 	context.Next()

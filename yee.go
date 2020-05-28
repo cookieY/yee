@@ -5,10 +5,9 @@ import (
 	"strings"
 )
 
-type HandlerFunc struct {
-	Func func(Context) error
-	IsMiddleware bool
-}
+type HandlerFunc  func(Context) error
+
+type MiddlewareFunc func(HandlerFunc) HandlerFunc
 
 // Core implement  httpServer interface
 type Core struct {

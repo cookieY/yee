@@ -23,18 +23,15 @@ func trace(info string) string {
 }
 
 func Recovery() yee.HandlerFunc {
-	return yee.HandlerFunc{
-		Func: func(c yee.Context) (err error) {
-			defer func() {
-				if err := recover(); err != nil {
-					message := fmt.Sprintf("%s", err)
-					log.Printf("%s", trace(message))
-					_ = c.String(http.StatusInternalServerError, "Internal Server Error")
-				}
-			}()
-			c.Next()
-			return
-		},
-		IsMiddleware: true,
+	return func(c yee.Context) (err error) {
+		defer func() {
+			if err := recover(); err != nil {
+				message := fmt.Sprintf("%s", err)
+				log.Printf("%s", trace(message))
+				_ = c.String(http.StatusInternalServerError, "Internal Server Error")
+			}
+		}()
+		c.Next()
+		return
 	}
 }

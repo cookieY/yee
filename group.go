@@ -36,31 +36,31 @@ func (g *group) Use(middleware ...HandlerFunc) {
 
 // todo: Implement the HTTP method and add router table
 
-func (g *group) GET(path string, handler UserFunc) {
-	g.addRoute("GET", path, HandlerFunc{Func: handler})
+func (g *group) GET(path string, handler HandlerFunc) {
+	g.addRoute("GET", path, handler)
 }
 
-func (g *group) POST(path string, handler UserFunc) {
-	g.addRoute("POST", path, HandlerFunc{Func: handler})
+func (g *group) POST(path string, handler HandlerFunc) {
+	g.addRoute("POST", path, handler)
 }
 
-func (g *group) PUT(path string, handler UserFunc) {
-	g.addRoute("PUT", path, HandlerFunc{Func: handler})
+func (g *group) PUT(path string, handler HandlerFunc) {
+	g.addRoute("PUT", path, handler)
 }
 
-func (g *group) DELETE(path string, handler UserFunc) {
-	g.addRoute("DELETE", path, HandlerFunc{Func: handler})
+func (g *group) DELETE(path string, handler HandlerFunc) {
+	g.addRoute("DELETE", path, handler)
 }
 
-func (g *group) HEAD(path string, handler UserFunc) {
-	g.addRoute("HEAD", path, HandlerFunc{Func: handler})
+func (g *group) HEAD(path string, handler HandlerFunc) {
+	g.addRoute("HEAD", path, handler)
 }
 
-func (g *group) OPTION(path string, handler UserFunc) {
-	g.addRoute("OPTION", path, HandlerFunc{Func: handler})
+func (g *group) OPTION(path string, handler HandlerFunc) {
+	g.addRoute("OPTION", path, handler)
 }
 
-func (g *group) createDistHandler(relativePath string, fs http.FileSystem) UserFunc {
+func (g *group) createDistHandler(relativePath string, fs http.FileSystem) HandlerFunc {
 	ab := path.Join(g.prefix, relativePath)
 	fs_1 := http.StripPrefix(ab, http.FileServer(fs))
 	return func(c Context) (err error) {

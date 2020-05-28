@@ -8,11 +8,11 @@ import (
 
 func newTestRouter() *router {
 	r := newRouter()
-	r.addRoute("GET", "/", HandlerFunc{})
-	r.addRoute("GET", "/hello/*filepath", HandlerFunc{})
-	r.addRoute("GET", "/:l/b/c", HandlerFunc{})
-	r.addRoute("GET", "/hi/:name", HandlerFunc{})
-	r.addRoute("GET", "/assets/*filepath", HandlerFunc{})
+	r.addRoute("GET", "/",nil)
+	r.addRoute("GET", "/hello/*filepath", nil)
+	r.addRoute("GET", "/:l/b/c", nil)
+	r.addRoute("GET", "/hi/:name", nil)
+	r.addRoute("GET", "/assets/*filepath", nil)
 	return r
 }
 func TestParsePattern(t *testing.T) {
