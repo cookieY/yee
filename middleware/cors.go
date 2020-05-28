@@ -72,15 +72,19 @@ func CorsWithConfig(config CORSConfig) yee.HandlerFunc {
 				if exposeHeaders != "" {
 					c.SetHeader(yee.HeaderAccessControlExposeHeaders, exposeHeaders)
 				}
-				c.Next()
 				return
 			}
 
 			c.AddHeader(yee.HeaderVary, yee.HeaderOrigin)
+
 			c.AddHeader(yee.HeaderVary, yee.HeaderAccessControlRequestMethod)
+
 			c.AddHeader(yee.HeaderVary, yee.HeaderAccessControlRequestHeaders)
+
 			c.SetHeader(yee.HeaderAccessControlAllowOrigin, allowOrigin)
+
 			c.SetHeader(yee.HeaderAccessControlAllowMethods, allowMethods)
+
 			if config.AllowCredentials {
 				c.SetHeader(yee.HeaderAccessControlAllowCredentials, "true")
 			}

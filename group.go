@@ -12,8 +12,6 @@ type group struct {
 	core       *Core
 }
 
-type UserFunc func(Context) error
-
 func (g *group) Group(prefix string) *group {
 	core := g.core
 	newGroup := &group{
@@ -37,28 +35,32 @@ func (g *group) Use(middleware ...HandlerFunc) {
 // todo: Implement the HTTP method and add router table
 
 func (g *group) GET(path string, handler UserFunc) {
-	g.addRoute("GET", path, HandlerFunc{Func: handler})
+	g.addRoute(http.MethodGet, path, HandlerFunc{Func: handler})
 }
 
-func (g *group) POST(path string, handler UserFunc) {
-	g.addRoute("POST", path, HandlerFunc{Func: handler})
-}
+//func (g *group) POST(path string, handler UserFunc) {
+//	g.addRoute(http.MethodPost, path, HandlerFunc{Func: handler})
+//}
 
-func (g *group) PUT(path string, handler UserFunc) {
-	g.addRoute("PUT", path, HandlerFunc{Func: handler})
-}
-
-func (g *group) DELETE(path string, handler UserFunc) {
-	g.addRoute("DELETE", path, HandlerFunc{Func: handler})
-}
-
-func (g *group) HEAD(path string, handler UserFunc) {
-	g.addRoute("HEAD", path, HandlerFunc{Func: handler})
-}
-
-func (g *group) OPTION(path string, handler UserFunc) {
-	g.addRoute("OPTION", path, HandlerFunc{Func: handler})
-}
+//func (g *group) PATCH(path string, handler UserFunc) {
+//	g.addRoute(http.MethodPatch, path, HandlerFunc{Func: handler})
+//}
+//
+//func (g *group) PUT(path string, handler UserFunc) {
+//	g.addRoute(http.MethodPut, path, HandlerFunc{Func: handler})
+//}
+//
+//func (g *group) DELETE(path string, handler UserFunc) {
+//	g.addRoute(http.MethodDelete, path, HandlerFunc{Func: handler})
+//}
+//
+//func (g *group) HEAD(path string, handler UserFunc) {
+//	g.addRoute(http.MethodHead, path, HandlerFunc{Func: handler})
+//}
+//
+//func (g *group) OPTIONS(path string, handler UserFunc) {
+//	g.addRoute(http.MethodOptions, path, HandlerFunc{Func: handler})
+//}
 
 func (g *group) createDistHandler(relativePath string, fs http.FileSystem) UserFunc {
 	ab := path.Join(g.prefix, relativePath)
@@ -74,8 +76,8 @@ func (g *group) createDistHandler(relativePath string, fs http.FileSystem) UserF
 
 }
 
-func (g *group) Static(relativePath, dist string) {
-	handler := g.createDistHandler(relativePath, http.Dir(dist))
-	url := path.Join(relativePath, "/*filepath")
-	g.GET(url, handler)
-}
+//func (g *group) Static(relativePath, dist string) {
+//	handler := g.createDistHandler(relativePath, http.Dir(dist))
+//	url := path.Join(relativePath, "/*filepath")
+//	g.GET(url, handler)
+//}

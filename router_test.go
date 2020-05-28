@@ -2,44 +2,31 @@ package yee
 
 import (
 	"fmt"
-	"reflect"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
-func newTestRouter() *router {
-	r := newRouter()
-	r.addRoute("GET", "/", HandlerFunc{})
-	r.addRoute("GET", "/hello/*filepath", HandlerFunc{})
-	r.addRoute("GET", "/:l/b/c", HandlerFunc{})
-	r.addRoute("GET", "/hi/:name", HandlerFunc{})
-	r.addRoute("GET", "/assets/*filepath", HandlerFunc{})
-	return r
-}
-func TestParsePattern(t *testing.T) {
-	ok := reflect.DeepEqual(parserParts("/p/:name"), []string{"p", ":name"})
-	ok = ok && reflect.DeepEqual(parserParts("/p/*"), []string{"p", "*"})
-	ok = ok && reflect.DeepEqual(parserParts("/p/*name/*"), []string{"p", "*name"})
-	if !ok {
-		t.Fatal("test parsePattern failed")
-	}
-}
+func TestDyncRouter(t *testing.T) {
 
-func TestGetRoute(t *testing.T) {
-	r := newTestRouter()
-	n, ps := r.fetchRoute("GET", "/hello/*filepath")
+	y := New()
 
-	if n == nil {
-		t.Fatal("nil shouldn't be returned")
-	}
 
-	if n.pattern != "/hello/*filepath" {
-		t.Fatal("should match /hello/*filepath")
-	}
 
-	if ps["filepath"] != "*filepath" {
-		t.Fatal("name should be equal to 'geektutu'")
-	}
+	y.GET("/hello/k/:name", func(c Context) error {
+		return c.String(http.StatusOK, c.Params("name"))
+	})
 
-	fmt.Printf("matched path: %s, params['name']: %s\n", n.pattern, ps["filepath"])
+	y.GET("/hello/k/b", func(c Context) error {
+		return c.String(http.StatusOK, "ok")
+	})
 
+	t.Run("http_get", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/hello/k/b2312312321", nil)
+		rec := httptest.NewRecorder()
+		y.ServeHTTP(rec, req)
+		fmt.Println(rec.Body.String())
+		//assert.Equal("test", rec.Body.String())
+		//assert.Equal("*", rec.Header().Get(yee.HeaderAccessControlAllowOrigin))
+	})
 }

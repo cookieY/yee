@@ -72,7 +72,8 @@ func JWTWithConfig(config JwtConfig) yee.HandlerFunc {
 		Func: func(c yee.Context) (err error) {
 			auth, err := extractor(c)
 			if err != nil {
-				return c.MiddError(http.StatusBadRequest, err)
+				c.MiddError(http.StatusBadRequest,err)
+				return
 			}
 			token := new(jwt.Token)
 			if _, ok := config.Claims.(jwt.MapClaims); ok {
@@ -84,8 +85,10 @@ func JWTWithConfig(config JwtConfig) yee.HandlerFunc {
 			}
 			if err == nil && token.Valid {
 				c.Put(config.GetKey, token)
+				return
 			}
-			return c.MiddError(http.StatusUnauthorized, errors.New("invalid or expired jwt"))
+			c.MiddError(http.StatusUnauthorized, errors.New("invalid or expired jwt"))
+			return
 		},
 		IsMiddleware: true,
 	}

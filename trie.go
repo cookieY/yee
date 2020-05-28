@@ -9,12 +9,11 @@ type node struct {
 	part     string
 	children []*node
 	isWild   bool
-	priority int8
 }
 
 func (n *node) matchChild(part string) *node {
 	for _, child := range n.children {
-		if child.pattern == part  {
+		if child.pattern == part {
 			return child
 		}
 	}
@@ -28,24 +27,7 @@ func (n *node) matchChildren(part string) []*node {
 			node = append(node, child)
 		}
 	}
-
-	return clearPriority(node)
-}
-
-func clearPriority(l []*node) []*node {
-	var c []*node
-
-	for _, i := range l {
-		if i.priority == 1 {
-			c = append(c, i)
-		}
-	}
-
-	if len(c) == 0 {
-		return l
-	} else {
-		return c
-	}
+	return node
 }
 
 func (n *node) insert(pattern string, parts []string, height int) {
@@ -56,11 +38,7 @@ func (n *node) insert(pattern string, parts []string, height int) {
 	part := parts[height]
 	child := n.matchChild(part)
 	if child == nil {
-		if part[0] == ':' || part[0] == '*' {
-			child = &node{part: part, isWild: true, priority: 2}
-		} else {
-			child = &node{part: part, isWild: false, priority: 1}
-		}
+		child = &node{part: part, isWild: part[0] == ':' || part[0] == '*'}
 		n.children = append(n.children, child)
 	}
 	child.insert(pattern, parts, height+1)
@@ -79,20 +57,28 @@ func (n *node) search(parts []string, height int) *node {
 
 	children := n.matchChildren(part)
 
+	var nodes []*node
+
 	for _, child := range children {
 		res := child.search(parts, height+1)
 		if res != nil {
-			return res
+			nodes = append(nodes, res)
 		}
 	}
-	return nil
-}
 
-func (n *node) travel(list *[]*node) {
-	if n.pattern != "" {
-		*list = append(*list, n)
+	index := 0
+
+	for _, i := range nodes {
+
+		if i.isWild {
+			index++
+		} else {
+			return i
+		}
 	}
-	for _, child := range n.children {
-		child.travel(list)
+
+	if index > 0 && nodes != nil {
+		return nodes[index-1]
 	}
+	return nil
 }

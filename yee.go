@@ -6,9 +6,12 @@ import (
 )
 
 type HandlerFunc struct {
-	Func func(Context) error
+	Func         UserFunc
 	IsMiddleware bool
 }
+type UserFunc func(Context) error
+
+type HandlersChain []UserFunc
 
 // Core implement  httpServer interface
 type Core struct {
