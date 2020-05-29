@@ -3,12 +3,15 @@ package yee
 import (
 	"encoding/json"
 	"io/ioutil"
+	"math"
 	"mime/multipart"
 	"net/http"
 	"net/url"
 	"strings"
 	"sync"
 )
+
+const abortIndex int8 = math.MaxInt8 / 2
 
 type Context interface {
 	Request() *http.Request
@@ -42,43 +45,42 @@ type Context interface {
 }
 
 type context struct {
-	w         http.ResponseWriter
+	engine    *Core
+	writermem responseWriter
+	w         ResponseWriter
 	r         *http.Request
 	path      string
 	method    string
 	code      int
 	queryList url.Values // 保存QueryParam
-	params    map[string]string
-
+	params    *Params
+	Param     Params
 	// middleware
 	handlers  []HandlerFunc
 	index     int
 	store     map[string]interface{}
 	lock      sync.RWMutex
 	noRewrite bool
-
 	intercept bool
 }
 
-func newContext(w http.ResponseWriter, r *http.Request) *context {
-	return &context{
-		w:      w,
-		r:      r,
-		path:   r.URL.Path,
-		method: r.Method,
-		index:  -1,
-	}
+func (c *context) reset() {
+	c.w = &c.writermem
+	c.Param = c.Param[0:0]
+	c.handlers = nil
+	c.index = -1
+	*c.params = (*c.params)[0:0]
 }
 
 func (c *context) Next() {
 	c.index++
 	s := len(c.handlers)
 	for ; c.index < s; c.index++ {
-		if c.intercept && !c.handlers[c.index].IsMiddleware {
-			continue
-		} else {
-			_ = c.handlers[c.index].Func(c)
-		}
+		//if c.intercept && !c.handlers[c.index].IsMiddleware {
+		//	continue
+		//} else {
+		_ = c.handlers[c.index](c)
+		//}
 	}
 }
 
@@ -166,8 +168,12 @@ func (c *context) GetHeader(key string) string {
 }
 
 func (c *context) Params(name string) string {
-	v, _ := c.params[name]
-	return v
+	for _, i := range *c.params {
+		if i.Key == name {
+			return i.Value
+		}
+	}
+	return ""
 }
 
 func (c *context) QueryParams() map[string][]string {

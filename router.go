@@ -1,91 +1,104 @@
 package yee
 
 import (
-	"fmt"
 	"net/http"
-	"strings"
 )
 
 type router struct {
-	route    map[string]*node
-	handlers map[string]HandlerFunc
+	handlers []HandlerFunc
+	core     *Core
+	root     bool
+	basePath string
 }
 
-func newRouter() *router {
+// todo: Implement the HTTP method and add router table
+
+func (r *router) GET(path string, handler ...HandlerFunc) {
+	r.handle(http.MethodGet, path, handler)
+}
+
+func (r *router) POST(path string, handler ...HandlerFunc) {
+	r.handle(http.MethodPost, path, handler)
+}
+
+func (r *router) PATCH(path string, handler ...HandlerFunc) {
+	r.handle(http.MethodPatch, path, handler)
+}
+
+func (r *router) PUT(path string, handler ...HandlerFunc) {
+	r.handle(http.MethodPut, path, handler)
+}
+
+func (r *router) DELETE(path string, handler ...HandlerFunc) {
+	r.handle(http.MethodDelete, path, handler)
+}
+
+func (r *router) HEAD(path string, handler ...HandlerFunc) {
+	r.handle(http.MethodHead, path, handler)
+}
+
+func (r *router) OPTIONS(path string, handler ...HandlerFunc) {
+	r.handle(http.MethodOptions, path, handler)
+}
+
+func (r *router) Use(middleware ...HandlerFunc) {
+	r.handlers = append(r.handlers, middleware...)
+}
+
+func (r *router) Group(prefix string, handlers ...HandlerFunc) *router {
 	return &router{
-		handlers: make(map[string]HandlerFunc),
-		route:    make(map[string]*node),
+		handlers: r.combineHandlers(handlers),
+		core:     r.core,
+		basePath: r.calculateAbsolutePath(prefix),
 	}
 }
 
-func parserParts(pattern string) []string {
-	l := strings.Split(pattern, "/")
-	parts := make([]string, 0)
-	for _, i := range l {
-		if i != "" {
-			parts = append(parts, i)
-			if i[0] == '*' {
-				break
-			}
-		}
-	}
-	return parts
+func (r *router) handle(method, path string, handlers HandlersChain) {
+	absolutePath := r.calculateAbsolutePath(path)
+	handlers = r.combineHandlers(handlers)
+	r.core.addRoute(method, absolutePath, handlers)
 }
 
-func (r *router) addRoute(method, path string, handler HandlerFunc) {
+func (c *Core) addRoute(method, prefix string, handlers HandlersChain) {
+	assertS(prefix[0] == '/', "path must begin with '/'")
+	assertS(method != "", "HTTP method can not be empty")
+	assertS(len(handlers) > 0, "there must be at least one handler")
 
-	parts := parserParts(path)
+	//debugPrintRoute(method, path, handlers)
 
-	handlePath := fmt.Sprintf("%s-%s", method, path)
-
-	if _, ok := r.route[method]; !ok {
-		r.route[method] = &node{}
+	root := c.trees.get(method)
+	if root == nil {
+		root = new(node)
+		root.fullPath = "/"
+		c.trees = append(c.trees, methodTree{method: method, root: root})
 	}
-	r.route[method].insert(path, parts, 0)
+	root.addRoute(prefix, handlers)
 
-	r.handlers[handlePath] = handler
+	// Update maxParams
+	if paramsCount := countParams(prefix); paramsCount > c.maxParams {
+		c.maxParams = paramsCount
+	}
 
 }
 
-func (r *router) fetchRoute(method, path string) (*node, map[string]string) {
-	sParts := parserParts(path)
-	params := make(map[string]string)
-	root, ok := r.route[method]
-	if !ok {
-		return nil, nil
+func (r *router) HTTPHandlerFunc(h http.HandlerFunc) HandlerFunc {
+	return func(c Context) error {
+		h(c.Response(), c.Request())
+		return nil
 	}
-	n := root.search(sParts, 0) // 查找子节点node列表 从cn开始
-	if n != nil {               // 如果存在节点返回节点信息以及params
-		parts := parserParts(n.pattern)
-		for idx, part := range parts {
-			if part[0] == ':' {
-				params[part[1:]] = sParts[idx]
-			}
-			if part[0] == '*' && len(part) > 1 {
-				params[part[1:]] = strings.Join(sParts[idx:], "/")
-				break
-			}
-			if part[0] == '/' && len(part) > 1 {
-				params["*"] = strings.Join(sParts[idx:], "/")
-				break
-			}
-		}
-		return n, params
-	}
-	return nil, nil
 }
 
-// Process all requests and into the router table
-func (r *router) handle(context *context) {
-	n, params := r.fetchRoute(context.method, context.path)
-	if n != nil {
-		context.params = params
-		path := fmt.Sprintf("%s-%s", context.method, n.pattern)
-		context.handlers = append(context.handlers, r.handlers[path])
-	} else {
-		context.handlers = append(context.handlers, HandlerFunc{Func: func(c Context) (err error) {
-			return c.String(http.StatusNotFound, fmt.Sprintf("404 NOT FOUND: %s\n", context.path))
-		}})
+func (r *router) calculateAbsolutePath(relativePath string) string {
+	return joinPaths(r.basePath, relativePath)
+}
+
+func (r *router) combineHandlers(handlers HandlersChain) HandlersChain {
+	finalSize := len(r.handlers) + len(handlers)
+	if finalSize >= int(abortIndex) {
+		panic("too many handlers")
 	}
-	context.Next()
+	mergedHandlers := make(HandlersChain, finalSize)
+	copy(mergedHandlers, r.handlers)
+	copy(mergedHandlers[len(r.handlers):], handlers)
+	return mergedHandlers
 }

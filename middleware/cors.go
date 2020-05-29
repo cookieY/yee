@@ -46,15 +46,20 @@ func CorsWithConfig(config CORSConfig) yee.HandlerFunc {
 	return func(c yee.Context) (err error) {
 
 		localOrigin := c.GetHeader(yee.HeaderOrigin)
+
 		allowOrigin := ""
+
+		m := c.GetMethod()
 
 		for _, o := range config.Origins {
 			if o == "*" && config.AllowCredentials {
 				allowOrigin = localOrigin
 				break
 			}
-
-			m := c.GetMethod()
+			if o == "*" || o == localOrigin {
+				allowOrigin = o
+				break
+			}
 
 			if m != http.MethodOptions {
 				c.AddHeader(yee.HeaderVary, yee.HeaderOrigin)
@@ -68,9 +73,6 @@ func CorsWithConfig(config CORSConfig) yee.HandlerFunc {
 				return
 			}
 		}
-
-		m := c.GetMethod()
-
 		if m != http.MethodOptions {
 			c.AddHeader(yee.HeaderVary, yee.HeaderOrigin)
 

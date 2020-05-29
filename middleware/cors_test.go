@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -19,16 +20,16 @@ func TestCors(t *testing.T) {
 		MaxAge:           0,
 	}))
 
-	y.GET("/", func(c yee.Context) error {
+	y.GET("/ok", func(c yee.Context) error {
 		return c.String(http.StatusOK, "test")
 	})
 
-	y.OPTIONS("/", func(c yee.Context) error {
-		return c.String(http.StatusOK, "")
+	y.OPTIONS("/ok", func(context yee.Context) (err error) {
+		return err
 	})
 
 	t.Run("http_get", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req := httptest.NewRequest(http.MethodGet, "/ok", nil)
 		rec := httptest.NewRecorder()
 		y.ServeHTTP(rec, req)
 		assert := assert.New(t)
@@ -37,9 +38,10 @@ func TestCors(t *testing.T) {
 	})
 
 	t.Run("http_option", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodOptions, "/", nil)
+		req := httptest.NewRequest(http.MethodOptions, "/ok", nil)
 		rec := httptest.NewRecorder()
 		y.ServeHTTP(rec, req)
+		fmt.Println(rec.Body.String())
 		assert := assert.New(t)
 		assert.Equal(http.MethodGet, rec.Header().Get(yee.HeaderAccessControlAllowMethods))
 		assert.Equal("Test", rec.Header().Get(yee.HeaderAccessControlAllowHeaders))

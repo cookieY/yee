@@ -345,7 +345,7 @@ var parseAPI = []*Route{
 	{"POST", "/1/functions"},
 }
 
-func yeeHandler(method, path string) yee.UserFunc {
+func yeeHandler(method, path string) yee.HandlerFunc {
 	return func(c yee.Context) error {
 		return c.String(http.StatusOK, "OK")
 	}
@@ -362,14 +362,14 @@ func loadYeeRoutes(e *yee.Core, routes []*Route) {
 		switch r.Method {
 		case "GET":
 			e.GET(r.Path, yeeHandler(r.Method, r.Path))
-			//case "POST":
-			//	e.POST(r.Path, yeeHandler(r.Method, r.Path))
-			//case "PATCH":
-			//	e.PATCH(r.Path, yeeHandler(r.Method, r.Path))
-			//case "PUT":
-			//	e.PUT(r.Path, yeeHandler(r.Method, r.Path))
-			//case  "DELETE":
-			//	e.DELETE(r.Path, yeeHandler(r.Method, r.Path))
+			case "POST":
+				e.POST(r.Path, yeeHandler(r.Method, r.Path))
+			case "PATCH":
+				e.PATCH(r.Path, yeeHandler(r.Method, r.Path))
+			case "PUT":
+				e.PUT(r.Path, yeeHandler(r.Method, r.Path))
+			case  "DELETE":
+				e.DELETE(r.Path, yeeHandler(r.Method, r.Path))
 		}
 	}
 }
@@ -418,8 +418,13 @@ func BenchmarkYeeGplusAPI(b *testing.B) {
 	benchmarkRoutes(b, e, gplusAPI)
 }
 
-func BenchmarkEchoParseAPI(b *testing.B) {
+func BenchmarkEchoGplusAPIAPI(b *testing.B) {
 	e := echo.New()
 	loadEchoRoutes(e, gplusAPI)
 	benchmarkRoutes(b, e, gplusAPI)
+}
+
+func Benchmark(b *testing.B) {
+	b.Run("BenchmarkYeeGplusAPI",BenchmarkYeeGplusAPI)
+	b.Run("BenchmarkEchoGplusAPIAPI",BenchmarkEchoGplusAPIAPI)
 }
