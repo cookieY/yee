@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"net/http"
 	"reflect"
 	"strings"
 	"yee"
@@ -67,30 +68,32 @@ func JWTWithConfig(config JwtConfig) yee.HandlerFunc {
 
 	parts := strings.Split(config.TokenLookup, ":")
 	extractor := jwtFromHeader(parts[1], config.AuthScheme)
-	return func(c yee.Context) (err error) {
-		auth, err := extractor(c)
-		if err != nil {
-			_ = c.String(400, err.Error())
-			return err
-		}
-		token := new(jwt.Token)
-		if _, ok := config.Claims.(jwt.MapClaims); ok {
-			token, err = jwt.Parse(auth, config.keyFunc)
+	return yee.HandlerFunc{
+		Func: func(c yee.Context) (err error) {
+			auth, err := extractor(c)
 			if err != nil {
-				_ = c.String(401, err.Error())
+				c.ServerError(http.StatusBadRequest, []byte(err.Error()))
 				return err
 			}
-		} else {
-			t := reflect.ValueOf(config.Claims).Type().Elem()
-			claims := reflect.New(t).Interface().(jwt.Claims)
-			token, err = jwt.ParseWithClaims(auth, claims, config.keyFunc)
-		}
-		if err == nil && token.Valid {
-			c.Put(config.GetKey, token)
-			return
-		}
-		_ = c.String(401, err.Error())
-		return err
+			token := new(jwt.Token)
+			if _, ok := config.Claims.(jwt.MapClaims); ok {
+				token, err = jwt.Parse(auth, config.keyFunc)
+				if err != nil {
+					c.ServerError(http.StatusUnauthorized, []byte(err.Error()))
+					return err
+				}
+			} else {
+				t := reflect.ValueOf(config.Claims).Type().Elem()
+				claims := reflect.New(t).Interface().(jwt.Claims)
+				token, err = jwt.ParseWithClaims(auth, claims, config.keyFunc)
+			}
+			if err == nil && token.Valid {
+				c.Put(config.GetKey, token)
+				return
+			}
+			return err
+		},
+		IsMiddleware: true,
 	}
 }
 

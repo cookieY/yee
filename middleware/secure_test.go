@@ -8,11 +8,10 @@ import (
 	"yee"
 )
 
-func TestLogger(t *testing.T) {
+func TestSecure(t *testing.T) {
 	y := yee.New()
-	y.Use(Logger())
+	y.Use(Secure())
 	y.GET("/", func(context yee.Context) error {
-		context.Logger().Critical("哈哈哈哈")
 		return context.String(http.StatusOK, "ok")
 	})
 	t.Run("http_get", func(t *testing.T) {
@@ -22,5 +21,8 @@ func TestLogger(t *testing.T) {
 		assert := assert.New(t)
 		assert.Equal("ok", rec.Body.String())
 		assert.Equal(http.StatusOK, rec.Code)
+		assert.Equal("SAMEORIGIN", rec.Header().Get(yee.HeaderXFrameOptions))
+		assert.Equal("1; mode=block",rec.Header().Get(yee.HeaderXXSSProtection))
+		assert.Equal("nosniff",rec.Header().Get(yee.HeaderXContentTypeOptions))
 	})
 }

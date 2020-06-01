@@ -13,32 +13,32 @@ type router struct {
 
 // todo: Implement the HTTP method and add router table
 
-func (r *router) GET(path string, handler ...HandlerFunc) {
-	r.handle(http.MethodGet, path, handler)
+func (r *router) GET(path string, handler UserFunc) {
+	r.handle(http.MethodGet, path, []HandlerFunc{{Func: handler}})
 }
 
-func (r *router) POST(path string, handler ...HandlerFunc) {
-	r.handle(http.MethodPost, path, handler)
+func (r *router) POST(path string, handler UserFunc) {
+	r.handle(http.MethodPost, path, []HandlerFunc{{Func: handler}})
 }
 
-func (r *router) PATCH(path string, handler ...HandlerFunc) {
-	r.handle(http.MethodPatch, path, handler)
+func (r *router) PATCH(path string, handler UserFunc) {
+	r.handle(http.MethodPatch, path, []HandlerFunc{{Func: handler}})
 }
 
-func (r *router) PUT(path string, handler ...HandlerFunc) {
-	r.handle(http.MethodPut, path, handler)
+func (r *router) PUT(path string, handler UserFunc) {
+	r.handle(http.MethodPut, path, []HandlerFunc{{Func: handler}})
 }
 
-func (r *router) DELETE(path string, handler ...HandlerFunc) {
-	r.handle(http.MethodDelete, path, handler)
+func (r *router) DELETE(path string, handler UserFunc) {
+	r.handle(http.MethodDelete, path, []HandlerFunc{{Func: handler}})
 }
 
-func (r *router) HEAD(path string, handler ...HandlerFunc) {
-	r.handle(http.MethodHead, path, handler)
+func (r *router) HEAD(path string, handler UserFunc) {
+	r.handle(http.MethodHead, path, []HandlerFunc{{Func: handler}})
 }
 
-func (r *router) OPTIONS(path string, handler ...HandlerFunc) {
-	r.handle(http.MethodOptions, path, handler)
+func (r *router) OPTIONS(path string, handler UserFunc) {
+	r.handle(http.MethodOptions, path, []HandlerFunc{{Func: handler}})
 }
 
 func (r *router) Use(middleware ...HandlerFunc) {
@@ -79,13 +79,6 @@ func (c *Core) addRoute(method, prefix string, handlers HandlersChain) {
 		c.maxParams = paramsCount
 	}
 
-}
-
-func (r *router) HTTPHandlerFunc(h http.HandlerFunc) HandlerFunc {
-	return func(c Context) error {
-		h(c.Response(), c.Request())
-		return nil
-	}
 }
 
 func (r *router) calculateAbsolutePath(relativePath string) string {

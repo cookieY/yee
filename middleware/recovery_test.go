@@ -8,19 +8,20 @@ import (
 	"yee"
 )
 
-func TestLogger(t *testing.T) {
+func TestRecovery(t *testing.T) {
 	y := yee.New()
-	y.Use(Logger())
+	y.Use(Recovery())
 	y.GET("/", func(context yee.Context) error {
-		context.Logger().Critical("哈哈哈哈")
-		return context.String(http.StatusOK, "ok")
+		var t error
+		return context.String(http.StatusOK, t.Error())
 	})
 	t.Run("http_get", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 		rec := httptest.NewRecorder()
 		y.ServeHTTP(rec, req)
 		assert := assert.New(t)
-		assert.Equal("ok", rec.Body.String())
-		assert.Equal(http.StatusOK, rec.Code)
+		assert.Equal("Internal Server Error", rec.Body.String())
+		assert.Equal(http.StatusInternalServerError, rec.Code)
 	})
 }
+

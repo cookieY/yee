@@ -1,15 +1,15 @@
 package yee
+
 // Copyright 2014 Manu Martinez-Almeida.  All rights reserved.
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
 )
-
-
 
 const (
 	noWritten     = -1
@@ -41,15 +41,30 @@ type ResponseWriter interface {
 
 	// get the http.Pusher for server push
 	Pusher() http.Pusher
+
+	Body() []byte
+
+	Writer() http.ResponseWriter
+
+	Override(rw http.ResponseWriter)
 }
 
 type responseWriter struct {
 	http.ResponseWriter
 	size   int
 	status int
+	body   []byte
 }
 
 var _ ResponseWriter = &responseWriter{}
+
+func (w *responseWriter) Writer() http.ResponseWriter {
+	return w.ResponseWriter
+}
+
+func (w *responseWriter) Override(rw http.ResponseWriter) {
+	w.ResponseWriter = rw
+}
 
 func (w *responseWriter) reset(writer http.ResponseWriter) {
 	w.ResponseWriter = writer
@@ -76,6 +91,8 @@ func (w *responseWriter) WriteHeaderNow() {
 func (w *responseWriter) Write(data []byte) (n int, err error) {
 	w.WriteHeaderNow()
 	n, err = w.ResponseWriter.Write(data)
+	w.body = data
+	fmt.Println(string(data))
 	w.size += n
 	return
 }
@@ -85,6 +102,10 @@ func (w *responseWriter) WriteString(s string) (n int, err error) {
 	n, err = io.WriteString(w.ResponseWriter, s)
 	w.size += n
 	return
+}
+
+func (w *responseWriter) Body() []byte {
+	return w.body
 }
 
 func (w *responseWriter) Status() int {

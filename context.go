@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"math"
 	"mime/multipart"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -15,7 +16,7 @@ const abortIndex int8 = math.MaxInt8 / 2
 
 type Context interface {
 	Request() *http.Request
-	Response() http.ResponseWriter
+	Response() ResponseWriter
 	HTML(code int, html string) (err error)
 	JSON(code int, i interface{}) error
 	String(code int, s string) error
@@ -38,10 +39,11 @@ type Context interface {
 	HTMLTml(code int, tml string) (err error)
 	QueryParams() map[string][]string
 	Bind(i interface{}) error
-	GetMethod() string
 	Get(key string) interface{}
 	Put(key string, values interface{})
 	ServerError(code int, defaultMessage []byte)
+	RemoteIp() string
+	Logger() Logger
 }
 
 type context struct {
@@ -79,16 +81,19 @@ func (c *context) Next() {
 		if c.intercept && !c.handlers[c.index].IsMiddleware {
 			continue
 		} else {
-			if err := c.handlers[c.index](c); err != nil {
-				continue
+			if err := c.handlers[c.index].Func(c); err != nil {
 			}
 		}
 	}
 }
 
+func (c *context) Logger() Logger {
+	return &c.engine.l
+}
+
 func (c *context) ServerError(code int, defaultMessage []byte) {
+	c.intercept = true
 	c.writermem.status = code
-	c.Next()
 	if c.writermem.Written() {
 		return
 	}
@@ -118,16 +123,23 @@ func (c *context) Get(key string) interface{} {
 	return c.store[key]
 }
 
-func (c *context) GetMethod() string {
-	return c.r.Method
-}
-
 func (c *context) Request() *http.Request {
 	return c.r
 }
 
-func (c *context) Response() http.ResponseWriter {
+func (c *context) Response() ResponseWriter {
 	return c.w
+}
+
+func (c *context) RemoteIp() string {
+	if ip := c.r.Header.Get(HeaderXForwardedFor); ip != "" {
+		return strings.Split(ip, ", ")[0]
+	}
+	if ip := c.r.Header.Get(HeaderXRealIP); ip != "" {
+		return ip
+	}
+	ip, _, _ := net.SplitHostPort(c.r.RemoteAddr)
+	return ip
 }
 
 func (c *context) HTML(code int, html string) (err error) {

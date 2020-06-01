@@ -43,27 +43,48 @@ func CorsWithConfig(config CORSConfig) yee.HandlerFunc {
 
 	maxAge := strconv.Itoa(config.MaxAge)
 
-	return func(c yee.Context) (err error) {
+	return yee.HandlerFunc{
+		Func:         func(c yee.Context) (err error) {
 
-		localOrigin := c.GetHeader(yee.HeaderOrigin)
+			localOrigin := c.GetHeader(yee.HeaderOrigin)
 
-		allowOrigin := ""
+			allowOrigin := ""
 
-		m := c.GetMethod()
+			m := c.Request().Method
 
-		for _, o := range config.Origins {
-			if o == "*" && config.AllowCredentials {
-				allowOrigin = localOrigin
-				break
+			for _, o := range config.Origins {
+				if o == "*" && config.AllowCredentials {
+					allowOrigin = localOrigin
+					break
+				}
+				if o == "*" || o == localOrigin {
+					allowOrigin = o
+					break
+				}
+
+				if m != http.MethodOptions {
+					c.AddHeader(yee.HeaderVary, yee.HeaderOrigin)
+					c.SetHeader(yee.HeaderAccessControlAllowOrigin, allowOrigin)
+					if config.AllowCredentials {
+						c.SetHeader(yee.HeaderAccessControlAllowCredentials, "true")
+					}
+					if exposeHeaders != "" {
+						c.SetHeader(yee.HeaderAccessControlExposeHeaders, exposeHeaders)
+					}
+					return
+				}
 			}
-			if o == "*" || o == localOrigin {
-				allowOrigin = o
-				break
-			}
-
 			if m != http.MethodOptions {
 				c.AddHeader(yee.HeaderVary, yee.HeaderOrigin)
+
+				c.AddHeader(yee.HeaderVary, yee.HeaderAccessControlRequestMethod)
+
+				c.AddHeader(yee.HeaderVary, yee.HeaderAccessControlRequestHeaders)
+
 				c.SetHeader(yee.HeaderAccessControlAllowOrigin, allowOrigin)
+
+				c.SetHeader(yee.HeaderAccessControlAllowMethods, allowMethods)
+
 				if config.AllowCredentials {
 					c.SetHeader(yee.HeaderAccessControlAllowCredentials, "true")
 				}
@@ -72,46 +93,28 @@ func CorsWithConfig(config CORSConfig) yee.HandlerFunc {
 				}
 				return
 			}
-		}
-		if m != http.MethodOptions {
+
 			c.AddHeader(yee.HeaderVary, yee.HeaderOrigin)
-
 			c.AddHeader(yee.HeaderVary, yee.HeaderAccessControlRequestMethod)
-
 			c.AddHeader(yee.HeaderVary, yee.HeaderAccessControlRequestHeaders)
-
 			c.SetHeader(yee.HeaderAccessControlAllowOrigin, allowOrigin)
-
 			c.SetHeader(yee.HeaderAccessControlAllowMethods, allowMethods)
-
 			if config.AllowCredentials {
 				c.SetHeader(yee.HeaderAccessControlAllowCredentials, "true")
 			}
-			if exposeHeaders != "" {
-				c.SetHeader(yee.HeaderAccessControlExposeHeaders, exposeHeaders)
+			if allowHeaders != "" {
+				c.SetHeader(yee.HeaderAccessControlAllowHeaders, allowHeaders)
+			} else {
+				h := c.GetHeader(yee.HeaderAccessControlRequestHeaders)
+				if h != "" {
+					c.SetHeader(yee.HeaderAccessControlAllowHeaders, h)
+				}
+			}
+			if config.MaxAge > 0 {
+				c.SetHeader(yee.HeaderAccessControlMaxAge, maxAge)
 			}
 			return
-		}
-
-		c.AddHeader(yee.HeaderVary, yee.HeaderOrigin)
-		c.AddHeader(yee.HeaderVary, yee.HeaderAccessControlRequestMethod)
-		c.AddHeader(yee.HeaderVary, yee.HeaderAccessControlRequestHeaders)
-		c.SetHeader(yee.HeaderAccessControlAllowOrigin, allowOrigin)
-		c.SetHeader(yee.HeaderAccessControlAllowMethods, allowMethods)
-		if config.AllowCredentials {
-			c.SetHeader(yee.HeaderAccessControlAllowCredentials, "true")
-		}
-		if allowHeaders != "" {
-			c.SetHeader(yee.HeaderAccessControlAllowHeaders, allowHeaders)
-		} else {
-			h := c.GetHeader(yee.HeaderAccessControlRequestHeaders)
-			if h != "" {
-				c.SetHeader(yee.HeaderAccessControlAllowHeaders, h)
-			}
-		}
-		if config.MaxAge > 0 {
-			c.SetHeader(yee.HeaderAccessControlMaxAge, maxAge)
-		}
-		return
+		},
+		IsMiddleware: true,
 	}
 }

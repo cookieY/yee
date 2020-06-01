@@ -2,6 +2,7 @@ package testing
 
 import (
 	"github.com/labstack/echo/v4"
+	echo_mid "github.com/labstack/echo/v4/middleware"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -345,7 +346,7 @@ var parseAPI = []*Route{
 	{"POST", "/1/functions"},
 }
 
-func yeeHandler(method, path string) yee.HandlerFunc {
+func yeeHandler(method, path string) yee.UserFunc {
 	return func(c yee.Context) error {
 		return c.String(http.StatusOK, "OK")
 	}
@@ -358,18 +359,19 @@ func echoHandler(method, path string) echo.HandlerFunc {
 }
 
 func loadYeeRoutes(e *yee.Core, routes []*Route) {
+	//e.Use(middleware.Logger())
 	for _, r := range routes {
 		switch r.Method {
 		case "GET":
 			e.GET(r.Path, yeeHandler(r.Method, r.Path))
-			case "POST":
-				e.POST(r.Path, yeeHandler(r.Method, r.Path))
-			case "PATCH":
-				e.PATCH(r.Path, yeeHandler(r.Method, r.Path))
-			case "PUT":
-				e.PUT(r.Path, yeeHandler(r.Method, r.Path))
-			case  "DELETE":
-				e.DELETE(r.Path, yeeHandler(r.Method, r.Path))
+		case "POST":
+			e.POST(r.Path, yeeHandler(r.Method, r.Path))
+		case "PATCH":
+			e.PATCH(r.Path, yeeHandler(r.Method, r.Path))
+		case "PUT":
+			e.PUT(r.Path, yeeHandler(r.Method, r.Path))
+		case "DELETE":
+			e.DELETE(r.Path, yeeHandler(r.Method, r.Path))
 		}
 	}
 }
@@ -379,7 +381,7 @@ func benchmarkRoutes(b *testing.B, router http.Handler, routes []*Route) {
 	r := httptest.NewRequest("GET", "/", nil)
 	u := r.URL
 	w := httptest.NewRecorder()
-
+	b.SetBytes(1024 * 1024)
 	for i := 0; i < b.N; i++ {
 		for _, route := range routes {
 			r.Method = route.Method
@@ -390,6 +392,7 @@ func benchmarkRoutes(b *testing.B, router http.Handler, routes []*Route) {
 }
 
 func loadEchoRoutes(e *echo.Echo, routes []*Route) {
+	e.Use(echo_mid.Logger())
 	for _, r := range routes {
 		switch r.Method {
 		case "GET":
@@ -425,6 +428,6 @@ func BenchmarkEchoGplusAPIAPI(b *testing.B) {
 }
 
 func Benchmark(b *testing.B) {
-	b.Run("BenchmarkYeeGplusAPI",BenchmarkYeeGplusAPI)
-	b.Run("BenchmarkEchoGplusAPIAPI",BenchmarkEchoGplusAPIAPI)
+	//b.Run("BenchmarkYeeGplusAPI", BenchmarkYeeGplusAPI)
+	b.Run("BenchmarkEchoGplusAPIAPI", BenchmarkEchoGplusAPIAPI)
 }

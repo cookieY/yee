@@ -5,7 +5,10 @@ import (
 	"sync"
 )
 
-type HandlerFunc func(Context) error
+type HandlerFunc struct {
+	Func         UserFunc
+	IsMiddleware bool
+}
 
 type UserFunc func(Context) error
 
@@ -20,6 +23,7 @@ type Core struct {
 	HandleMethodNotAllowed bool
 	allNoRoute             HandlersChain
 	allNoMethod            HandlersChain
+	l                      logger
 }
 
 type HTTPError struct {
@@ -28,7 +32,7 @@ type HTTPError struct {
 	Internal error // Stores the error returned by an external dependency
 }
 
-const YeeVersion = "Yee v0.0.1"
+const Version = "Yee v0.0.1"
 
 // init Core
 func New() *Core {
@@ -41,6 +45,7 @@ func New() *Core {
 	core := &Core{
 		trees:  make(methodTrees, 0, 0),
 		router: router,
+		l:      logger{level: 6},
 	}
 	core.core = core
 	core.pool.New = func() interface{} {
