@@ -20,7 +20,6 @@ type Core struct {
 	HandleMethodNotAllowed bool
 	allNoRoute             HandlersChain
 	allNoMethod            HandlersChain
-	Logger                 *Logger
 }
 
 type HTTPError struct {
@@ -42,7 +41,6 @@ func New() *Core {
 	core := &Core{
 		trees:  make(methodTrees, 0, 0),
 		router: router,
-		Logger: &Logger{},
 	}
 	core.core = core
 	core.pool.New = func() interface{} {
@@ -111,7 +109,7 @@ func (c *Core) handleHTTPRequest(context *context) {
 			context.handlers = value.handlers
 			context.path = value.fullPath
 			context.Next()
-			//c.writermem.WriteHeaderNow()
+			context.writermem.WriteHeaderNow()
 			return
 		}
 		//if httpMethod != "CONNECT" && rPath != "/" {
@@ -139,22 +137,5 @@ func (c *Core) handleHTTPRequest(context *context) {
 	//	}
 	//}
 	context.handlers = c.allNoRoute
-	_ = context.String(404, "NOT FOUND")
+	context.ServerError(404, []byte("404 NOT FOUND"))
 }
-
-//func serveError(c *context, code int, defaultMessage []byte) {
-//	c.writermem.status = code
-//	c.Next()
-//	if c.writermem.Written() {
-//		return
-//	}
-//	if c.writermem.Status() == code {
-//		c.writermem.Header()["Content-Type"] = mimePlain
-//		_, err := c.Writer.Write(defaultMessage)
-//		if err != nil {
-//			debugPrint("cannot write message to writer during serve error: %v", err)
-//		}
-//		return
-//	}
-//	c.writermem.WriteHeaderNow()
-//}

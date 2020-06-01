@@ -41,7 +41,7 @@ type Context interface {
 	GetMethod() string
 	Get(key string) interface{}
 	Put(key string, values interface{})
-	MiddError(code int, err error)
+	ServerError(code int, defaultMessage []byte)
 }
 
 type context struct {
@@ -76,18 +76,31 @@ func (c *context) Next() {
 	c.index++
 	s := len(c.handlers)
 	for ; c.index < s; c.index++ {
-		//if c.intercept && !c.handlers[c.index].IsMiddleware {
-		//	continue
-		//} else {
-		_ = c.handlers[c.index](c)
-		//}
+		if c.intercept && !c.handlers[c.index].IsMiddleware {
+			continue
+		} else {
+			if err := c.handlers[c.index](c); err != nil {
+				continue
+			}
+		}
 	}
 }
 
-func (c *context) MiddError(code int, err error) {
-	c.intercept = true
+func (c *context) ServerError(code int, defaultMessage []byte) {
+	c.writermem.status = code
 	c.Next()
-	_ = c.String(code, err.Error())
+	if c.writermem.Written() {
+		return
+	}
+	if c.writermem.Status() == code {
+		c.writermem.Header()["Content-Type"] = []string{MIMETextPlain}
+		_, err := c.w.Write(defaultMessage)
+		if err != nil {
+			//debugPrint("cannot write message to writer during serve error: %v", err)
+		}
+		return
+	}
+	c.writermem.WriteHeaderNow()
 }
 
 func (c *context) Put(key string, values interface{}) {
