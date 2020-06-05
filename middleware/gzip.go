@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"compress/gzip"
 	"io"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"strings"
@@ -39,18 +40,18 @@ func GzipWithConfig(config GzipConfig) yee.HandlerFunc {
 				rw := res.Writer()
 				w, err := gzip.NewWriterLevel(rw, config.Level)
 				if err != nil {
-					c.ServerError(500, []byte(err.Error()))
+					return err
 				}
-				//defer func() {
-				//	if res.Size() == 0 {
-				//		if res.Header().Get(yee.HeaderContentEncoding) == "gzip" {
-				//			res.Header().Del(yee.HeaderContentEncoding)
-				//		}
-				//	}
-				//	res.Override(rw)
-				//	w.Reset(ioutil.Discard)
-				//	_ = w.Close()
-				//}()
+				defer func() {
+					if res.Size() < 1 {
+						if res.Header().Get(yee.HeaderContentEncoding) == "gzip" {
+							res.Header().Del(yee.HeaderContentEncoding)
+						}
+						res.Override(rw)
+						w.Reset(ioutil.Discard)
+					}
+					_ = w.Close()
+				}()
 				grw := &gzipResponseWriter{Writer: w, ResponseWriter: rw}
 				res.Override(grw)
 			}

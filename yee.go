@@ -55,7 +55,7 @@ func New() *Core {
 }
 func (c *Core) allocateContext() *context {
 	v := make(Params, 0, c.maxParams)
-	return &context{engine: c, params: &v}
+	return &context{engine: c, params: &v, index: -1}
 }
 
 func (c *Core) Use(middleware ...HandlerFunc) {
@@ -72,8 +72,10 @@ func (c *Core) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c.pool.Put(context)
 }
 
-func (c *Core) Start(addr string) error {
-	return http.ListenAndServe(addr, c)
+func (c *Core) Start(addr string) {
+	if err := http.ListenAndServe(addr, c); err != nil {
+		panic(err)
+	}
 }
 
 // NewHTTPError creates a new HTTPError instance.
@@ -118,11 +120,11 @@ func (c *Core) handleHTTPRequest(context *context) {
 			return
 		}
 		//if httpMethod != "CONNECT" && rPath != "/" {
-		//	if value.tsr && engine.RedirectTrailingSlash {
+		//	if value.tsr && c.RedirectTrailingSlash {
 		//		redirectTrailingSlash(c)
 		//		return
 		//	}
-		//	if engine.RedirectFixedPath && redirectFixedPath(c, root, engine.RedirectFixedPath) {
+		//	if c.RedirectFixedPath && redirectFixedPath(c, root, c.RedirectFixedPath) {
 		//		return
 		//	}
 		//}

@@ -7,7 +7,7 @@
 dist
 # Test binary, built with `go test -c`
 *.test
-
+testing/h5
 .idea
 
 # Output of the go coverage tool, specifically when used with LiteIDE

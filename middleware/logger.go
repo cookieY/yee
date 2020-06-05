@@ -17,7 +17,7 @@ type (
 )
 
 var DefaultLoggerConfig = LoggerConfig{
-	Format:   `"url":"${url}" "method":"${method}" "status":${status} "protocol":"${protocol}" "remote_ip":"${remote_ip}" "error":"${error}" "bytes_in": "${bytes_in} bytes" "bytes_out": "${bytes_out} bytes"`,
+	Format:   `"url":"${url}" "method":"${method}" "status":${status} "protocol":"${protocol}" "remote_ip":"${remote_ip}" "bytes_in": "${bytes_in} bytes" "bytes_out": "${bytes_out} bytes"`,
 	Level:    3,
 	IsLogger: true,
 }
@@ -78,12 +78,6 @@ func LoggerWithConfig(config LoggerConfig) yee.HandlerFunc {
 					return w.Write([]byte(cl))
 				case "bytes_out":
 					return w.Write([]byte(fmt.Sprintf("%d", context.Response().Size())))
-				case "error":
-					if context.Response().Status() != 200 {
-						return w.Write(context.Response().Body())
-					} else {
-						return w.Write([]byte(""))
-					}
 				default:
 					return w.Write([]byte(""))
 				}

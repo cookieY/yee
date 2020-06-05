@@ -5,7 +5,6 @@ package yee
 // license that can be found in the LICENSE file.
 import (
 	"bufio"
-	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -42,8 +41,6 @@ type ResponseWriter interface {
 	// get the http.Pusher for server push
 	Pusher() http.Pusher
 
-	Body() []byte
-
 	Writer() http.ResponseWriter
 
 	Override(rw http.ResponseWriter)
@@ -53,7 +50,6 @@ type responseWriter struct {
 	http.ResponseWriter
 	size   int
 	status int
-	body   []byte
 }
 
 var _ ResponseWriter = &responseWriter{}
@@ -91,8 +87,6 @@ func (w *responseWriter) WriteHeaderNow() {
 func (w *responseWriter) Write(data []byte) (n int, err error) {
 	w.WriteHeaderNow()
 	n, err = w.ResponseWriter.Write(data)
-	w.body = data
-	fmt.Println(string(data))
 	w.size += n
 	return
 }
@@ -102,10 +96,6 @@ func (w *responseWriter) WriteString(s string) (n int, err error) {
 	n, err = io.WriteString(w.ResponseWriter, s)
 	w.size += n
 	return
-}
-
-func (w *responseWriter) Body() []byte {
-	return w.body
 }
 
 func (w *responseWriter) Status() int {

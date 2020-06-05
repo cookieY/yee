@@ -2,6 +2,8 @@ package yee
 
 import (
 	"net/http"
+	"path"
+	"strings"
 )
 
 type router struct {
@@ -79,6 +81,33 @@ func (c *Core) addRoute(method, prefix string, handlers HandlersChain) {
 		c.maxParams = paramsCount
 	}
 
+}
+
+func (r *router) Static(relativePath, root string) {
+	if strings.Contains(relativePath, ":") || strings.Contains(relativePath, "*") {
+		panic("URL path cannot be used when serving a static folder")
+	}
+	handler := r.createDistHandler(relativePath, http.Dir(root))
+	url := path.Join(relativePath, "/*filepath")
+	r.GET(url, handler)
+	r.HEAD(url, handler)
+
+}
+
+func (r *router) createDistHandler(relativePath string, fs http.FileSystem) UserFunc {
+	absolutePath := r.calculateAbsolutePath(relativePath)
+	fileServer := http.StripPrefix(absolutePath, http.FileServer(fs))
+	return func(c Context) (err error) {
+		file := c.Params("filepath")
+		f, err := fs.Open(file)
+		if err != nil {
+			c.Status(http.StatusNotFound)
+			return
+		}
+		_ = f.Close()
+		fileServer.ServeHTTP(c.Response(), c.Request())
+		return
+	}
 }
 
 func (r *router) calculateAbsolutePath(relativePath string) string {
