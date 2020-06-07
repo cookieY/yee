@@ -2,6 +2,7 @@ package yee
 
 import (
 	"net/http"
+	"path"
 	"sync"
 )
 
@@ -23,7 +24,10 @@ type Core struct {
 	HandleMethodNotAllowed bool
 	allNoRoute             HandlersChain
 	allNoMethod            HandlersChain
+	noRoute                HandlersChain
 	l                      logger
+	RedirectTrailingSlash  bool
+	RedirectFixedPath      bool
 }
 
 type HTTPError struct {
@@ -68,7 +72,9 @@ func (c *Core) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	context.writermem.reset(w)
 	context.r = r
 	context.reset()
+
 	c.handleHTTPRequest(context)
+
 	c.pool.Put(context)
 }
 
@@ -119,15 +125,15 @@ func (c *Core) handleHTTPRequest(context *context) {
 			context.writermem.WriteHeaderNow()
 			return
 		}
-		//if httpMethod != "CONNECT" && rPath != "/" {
-		//	if value.tsr && c.RedirectTrailingSlash {
-		//		redirectTrailingSlash(c)
-		//		return
-		//	}
-		//	if c.RedirectFixedPath && redirectFixedPath(c, root, c.RedirectFixedPath) {
-		//		return
-		//	}
-		//}
+		if httpMethod != "CONNECT" && rPath != "/" {
+			if value.tsr && c.RedirectTrailingSlash {
+				redirectTrailingSlash(context)
+				return
+			}
+			//if c.RedirectFixedPath && redirectFixedPath(c, root, c.RedirectFixedPath) {
+			//	return
+			//}
+		}
 		break
 	}
 
@@ -144,5 +150,42 @@ func (c *Core) handleHTTPRequest(context *context) {
 	//	}
 	//}
 	context.handlers = c.allNoRoute
-	context.ServerError(404, []byte("404 NOT FOUND"))
+	context.ServerError(404, []byte("404 NOT FOUND"),false)
+}
+
+func redirectTrailingSlash(c *context) {
+	req := c.r
+	p := req.URL.Path
+	if prefix := path.Clean(c.r.Header.Get("X-Forwarded-Prefix")); prefix != "." {
+		p = prefix + "/" + req.URL.Path
+	}
+	req.URL.Path = p + "/"
+	if length := len(p); length > 1 && p[length-1] == '/' {
+		req.URL.Path = p[:length-1]
+	}
+	redirectRequest(c)
+}
+
+//func redirectFixedPath(c *context, root *node, trailingSlash bool) bool {
+//	req := c.r
+//	rPath := req.URL.Path
+//
+//	if fixedPath, ok := root.findCaseInsensitivePath(cleanPath(rPath), trailingSlash); ok {
+//		req.URL.Path = BytesToString(fixedPath)
+//		redirectRequest(c)
+//		return true
+//	}
+//	return false
+//}
+
+func redirectRequest(c *context) {
+	req := c.r
+	rURL := req.URL.String()
+
+	code := http.StatusMovedPermanently // Permanent redirect, request with GET method
+	if req.Method != http.MethodGet {
+		code = http.StatusTemporaryRedirect
+	}
+	http.Redirect(c.w, req, rURL, code)
+	c.writermem.WriteHeaderNow()
 }

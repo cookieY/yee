@@ -82,12 +82,11 @@ func LoggerWithConfig(config LoggerConfig) yee.HandlerFunc {
 					return w.Write([]byte(""))
 				}
 			})
-			if context.Response().Status() == 200 {
+			if context.Response().Status() < 400 {
 				logger.Trace(s)
 			} else {
 				logger.Warn(s)
 			}
-
 			return
 		},
 		IsMiddleware: true,

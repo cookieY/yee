@@ -99,13 +99,14 @@ func (r *router) createDistHandler(relativePath string, fs http.FileSystem) User
 	fileServer := http.StripPrefix(absolutePath, http.FileServer(fs))
 	return func(c Context) (err error) {
 		file := c.Params("filepath")
-		f, err := fs.Open(file)
-		if err != nil {
+		f, err2 := fs.Open(file)
+		if err2 != nil {
 			c.Status(http.StatusNotFound)
-			return
+			c.Reset()
+		} else {
+			_ = f.Close()
+			fileServer.ServeHTTP(c.Response(), c.Request())
 		}
-		_ = f.Close()
-		fileServer.ServeHTTP(c.Response(), c.Request())
 		return
 	}
 }

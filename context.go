@@ -2,6 +2,7 @@ package yee
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"math"
 	"mime/multipart"
@@ -41,9 +42,10 @@ type Context interface {
 	Bind(i interface{}) error
 	Get(key string) interface{}
 	Put(key string, values interface{})
-	ServerError(code int, defaultMessage []byte)
+	ServerError(code int, defaultMessage []byte, IsMiddleware bool)
 	RemoteIp() string
 	Logger() Logger
+	Reset()
 }
 
 type context struct {
@@ -58,12 +60,19 @@ type context struct {
 	params    *Params
 	Param     Params
 	// middleware
-	handlers  []HandlerFunc
+	handlers  HandlersChain
 	index     int
 	store     map[string]interface{}
 	lock      sync.RWMutex
 	noRewrite bool
 	intercept bool
+
+	Accepted []string
+}
+
+func (c *context) Reset() {
+	c.index = -1
+	c.handlers = c.engine.noRoute
 }
 
 func (c *context) reset() {
@@ -71,6 +80,12 @@ func (c *context) reset() {
 	c.Param = c.Param[0:0]
 	c.handlers = nil
 	c.index = -1
+	c.path = ""
+	//c.Keys = nil
+	//c.Errors = c.Errors[0:0]
+	c.Accepted = nil
+	//c.queryCache = nil
+	//c.formCache = nil
 	*c.params = (*c.params)[0:0]
 }
 
@@ -82,6 +97,7 @@ func (c *context) Next() {
 			continue
 		} else {
 			if err := c.handlers[c.index].Func(c); err != nil {
+				fmt.Println(err.Error())
 			}
 		}
 	}
@@ -91,8 +107,8 @@ func (c *context) Logger() Logger {
 	return &c.engine.l
 }
 
-func (c *context) ServerError(code int, defaultMessage []byte) {
-	c.intercept = true
+func (c *context) ServerError(code int, defaultMessage []byte, IsMiddleware bool) {
+	c.intercept = IsMiddleware
 	c.writermem.status = code
 	if c.writermem.Written() {
 		return
@@ -101,6 +117,7 @@ func (c *context) ServerError(code int, defaultMessage []byte) {
 		c.writermem.Header()["Content-Type"] = []string{MIMETextPlain}
 		_, err := c.w.Write(defaultMessage)
 		if err != nil {
+			//fmt.Println(err.Error())
 			//debugPrint("cannot write message to writer during serve error: %v", err)
 		}
 		return
@@ -162,6 +179,9 @@ func (c *context) Blob(code int, contentType string, b []byte) (err error) {
 	c.writeContentType(contentType)
 	c.w.WriteHeader(code)
 	_, err = c.w.Write(b)
+	if err != nil {
+		fmt.Println(err)
+	}
 	return
 }
 
