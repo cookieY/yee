@@ -3,7 +3,7 @@
 ![](https://img.shields.io/badge/build-alpha-brightgreen.svg)  
 ![](https://img.shields.io/badge/version-v0.0.1-brightgreen.svg)
 
-Echo-like web framework. This is a framework for learning purposes. Study 7-golang and echo source code to realize some echo functions
+Echo-like web framework. This is a framework for learning purposes. Study 7-golang and echo & gin source code to realize some echo functions
 
 -   Build RESTful APIs
 -   Group APIs
