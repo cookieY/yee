@@ -1,4 +1,4 @@
-module github.com/cookieY/Yee
+module github.com/cookieY/yee
 
 go 1.14
 
