@@ -2,7 +2,6 @@ package testing
 
 import (
 	"github.com/labstack/echo/v4"
-	echo_mid "github.com/labstack/echo/v4/middleware"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -392,7 +391,6 @@ func benchmarkRoutes(b *testing.B, router http.Handler, routes []*Route) {
 }
 
 func loadEchoRoutes(e *echo.Echo, routes []*Route) {
-	e.Use(echo_mid.Logger())
 	for _, r := range routes {
 		switch r.Method {
 		case "GET":
@@ -428,6 +426,6 @@ func BenchmarkEchoGplusAPIAPI(b *testing.B) {
 }
 
 func Benchmark(b *testing.B) {
-	//b.Run("BenchmarkYeeGplusAPI", BenchmarkYeeGplusAPI)
+	b.Run("BenchmarkYeeGplusAPI", BenchmarkYeeGplusAPI)
 	b.Run("BenchmarkEchoGplusAPIAPI", BenchmarkEchoGplusAPIAPI)
 }

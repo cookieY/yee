@@ -53,8 +53,8 @@ func TestJwt(t *testing.T) {
 			}
 			time.Sleep(i.Expire)
 			y.ServeHTTP(rec, req)
-			assert := assert.New(t)
-			assert.Equal(i.Expected, rec.Code)
+			assert2 := assert.New(t)
+			assert2.Equal(i.Expected, rec.Code)
 		})
 	}
 }

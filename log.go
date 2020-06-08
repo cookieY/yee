@@ -38,8 +38,8 @@ type Logger interface {
 
 type coloring func(string) string
 
-func LogCreator() logger {
-	return logger{}
+func LogCreator() *logger {
+	return new(logger)
 }
 
 func (l *logger) SetLevel(level uint8) {

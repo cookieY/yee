@@ -5,6 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/valyala/fasttemplate"
 	"io"
+	"log"
 	"yee"
 )
 
@@ -35,12 +36,10 @@ func LoggerWithConfig(config LoggerConfig) yee.HandlerFunc {
 		config.Level = DefaultLoggerConfig.Level
 	}
 
-	config.IsLogger = true
-
 	t, err := fasttemplate.NewTemplate(config.Format, "${", "}")
 
 	if err != nil {
-		//logger.Error(fmt.Sprintf("unexpected error when parsing template: %s", err))
+		log.Fatalf("unexpected error when parsing template: %s", err)
 	}
 
 	logger := yee.LogCreator()
