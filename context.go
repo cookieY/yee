@@ -209,7 +209,7 @@ func (c *context) AddHeader(key string, value string) {
 }
 
 func (c *context) GetHeader(key string) string {
-	return c.w.Header().Get(key)
+	return c.r.Header.Get(key)
 }
 
 func (c *context) Params(name string) string {

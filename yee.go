@@ -1,6 +1,7 @@
 package yee
 
 import (
+	"fmt"
 	"net/http"
 	"path"
 	"sync"
@@ -38,6 +39,18 @@ type HTTPError struct {
 
 const Version = "Yee v0.0.1"
 
+const banner =  `
+  ___    ___ _______   _______      
+ |\  \  /  /|\  ___ \ |\  ___ \     
+ \ \  \/  / | \   __/|\ \   __/|    
+  \ \    / / \ \  \_|/_\ \  \_|/__  
+   \/  /  /   \ \  \_|\ \ \  \_|\ \ 
+ __/  / /      \ \_______\ \_______\
+|\___/ /        \|_______|\|_______|  %s
+\|___|/
+
+`
+
 // init Core
 func New() *Core {
 	router := &router{
@@ -55,6 +68,9 @@ func New() *Core {
 	core.pool.New = func() interface{} {
 		return core.allocateContext()
 	}
+
+	fmt.Printf(banner,Version)
+
 	return core
 }
 func (c *Core) allocateContext() *context {
