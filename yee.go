@@ -26,6 +26,7 @@ type Core struct {
 	allNoRoute             HandlersChain
 	allNoMethod            HandlersChain
 	noRoute                HandlersChain
+	noMethod               HandlersChain
 	l                      logger
 	RedirectTrailingSlash  bool
 	RedirectFixedPath      bool
@@ -39,7 +40,7 @@ type HTTPError struct {
 
 const Version = "Yee v0.0.1"
 
-const banner =  `
+const banner = `
   ___    ___ _______   _______      
  |\  \  /  /|\  ___ \ |\  ___ \     
  \ \  \/  / | \   __/|\ \   __/|    
@@ -69,7 +70,7 @@ func New() *Core {
 		return core.allocateContext()
 	}
 
-	fmt.Printf(banner,Version)
+	fmt.Printf(banner, Version)
 
 	return core
 }
@@ -80,6 +81,17 @@ func (c *Core) allocateContext() *context {
 
 func (c *Core) Use(middleware ...HandlerFunc) {
 	c.router.Use(middleware...)
+	c.rebuild404Handlers()
+	c.rebuild405Handlers()
+
+}
+
+func (c *Core) rebuild404Handlers() {
+	c.allNoRoute = c.combineHandlers(c.noRoute)
+}
+
+func (c *Core) rebuild405Handlers() {
+	c.allNoMethod = c.combineHandlers(c.noMethod)
 }
 
 // override Handler.ServeHTTP
@@ -136,7 +148,7 @@ func (c *Core) handleHTTPRequest(context *context) {
 		if value.params != nil {
 			context.Param = *value.params
 		}
-		if value.handlers != nil  {
+		if value.handlers != nil {
 			context.handlers = value.handlers
 			context.path = value.fullPath
 			context.Next()
@@ -167,8 +179,31 @@ func (c *Core) handleHTTPRequest(context *context) {
 	//		}
 	//	}
 	//}
+
 	context.handlers = c.allNoRoute
-	context.ServerError(404, []byte("404 NOT FOUND"),false)
+
+	if httpMethod == http.MethodOptions {
+		serveError(context, 200, []byte("preflight resource"))
+	} else {
+		serveError(context, http.StatusNotFound, []byte("404 NOT FOUND"))
+	}
+}
+
+func serveError(c *context, code int, defaultMessage []byte) {
+	c.writermem.status = code
+	c.Next()
+	if c.writermem.Written() {
+		return
+	}
+	if c.writermem.Status() == code {
+		c.writermem.Header()["Content-Type"] = []string{MIMETextPlain}
+		_, err := c.w.Write(defaultMessage)
+		if err != nil {
+			c.engine.l.Error(fmt.Sprintf("cannot write message to writer during serve error: %v", err))
+		}
+		return
+	}
+	c.writermem.WriteHeaderNow()
 }
 
 func redirectTrailingSlash(c *context) {

@@ -42,7 +42,9 @@ func CorsWithConfig(config CORSConfig) yee.HandlerFunc {
 	exposeHeaders := strings.Join(config.ExposeHeaders, ",")
 
 	maxAge := strconv.Itoa(config.MaxAge)
+
 	return yee.HandlerFunc{
+
 		Func: func(c yee.Context) (err error) {
 
 			localOrigin := c.GetHeader(yee.HeaderOrigin)

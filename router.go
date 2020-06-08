@@ -17,12 +17,10 @@ type router struct {
 
 func (r *router) GET(path string, handler UserFunc) {
 	r.handle(http.MethodGet, path, []HandlerFunc{{Func: handler}})
-	r.handle(http.MethodOptions, path, r.core.noRoute)
 }
 
 func (r *router) POST(path string, handler UserFunc) {
 	r.handle(http.MethodPost, path, []HandlerFunc{{Func: handler}})
-	r.handle(http.MethodOptions, path, r.core.noRoute)
 }
 
 func (r *router) PATCH(path string, handler UserFunc) {
@@ -31,12 +29,10 @@ func (r *router) PATCH(path string, handler UserFunc) {
 
 func (r *router) PUT(path string, handler UserFunc) {
 	r.handle(http.MethodPut, path, []HandlerFunc{{Func: handler}})
-	r.handle(http.MethodOptions, path, r.core.noRoute)
 }
 
 func (r *router) DELETE(path string, handler UserFunc) {
 	r.handle(http.MethodDelete, path, []HandlerFunc{{Func: handler}})
-	r.handle(http.MethodOptions, path, r.core.noRoute)
 }
 
 func (r *router) HEAD(path string, handler UserFunc) {
