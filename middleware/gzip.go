@@ -3,7 +3,7 @@ package middleware
 import (
 	"bufio"
 	"compress/gzip"
-	"github.com/cookieY/Yee"
+	"github.com/cookieY/yee"
 	"io"
 	"io/ioutil"
 	"net"

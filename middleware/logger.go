@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"fmt"
-	"github.com/cookieY/Yee"
+	"github.com/cookieY/yee"
 	"github.com/valyala/fasttemplate"
 	"io"
 	"log"

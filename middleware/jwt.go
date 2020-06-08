@@ -3,7 +3,7 @@ package middleware
 import (
 	"errors"
 	"fmt"
-	"github.com/cookieY/Yee"
+	"github.com/cookieY/yee"
 	"github.com/dgrijalva/jwt-go"
 	"net/http"
 	"reflect"

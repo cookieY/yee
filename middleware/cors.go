@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/cookieY/Yee"
+	"github.com/cookieY/yee"
 	"net/http"
 	"strconv"
 	"strings"
