@@ -17,10 +17,12 @@ type router struct {
 
 func (r *router) GET(path string, handler UserFunc) {
 	r.handle(http.MethodGet, path, []HandlerFunc{{Func: handler}})
+	r.handle(http.MethodOptions, path, r.core.noRoute)
 }
 
 func (r *router) POST(path string, handler UserFunc) {
 	r.handle(http.MethodPost, path, []HandlerFunc{{Func: handler}})
+	r.handle(http.MethodOptions, path, r.core.noRoute)
 }
 
 func (r *router) PATCH(path string, handler UserFunc) {
@@ -29,10 +31,12 @@ func (r *router) PATCH(path string, handler UserFunc) {
 
 func (r *router) PUT(path string, handler UserFunc) {
 	r.handle(http.MethodPut, path, []HandlerFunc{{Func: handler}})
+	r.handle(http.MethodOptions, path, r.core.noRoute)
 }
 
 func (r *router) DELETE(path string, handler UserFunc) {
 	r.handle(http.MethodDelete, path, []HandlerFunc{{Func: handler}})
+	r.handle(http.MethodOptions, path, r.core.noRoute)
 }
 
 func (r *router) HEAD(path string, handler UserFunc) {
@@ -64,7 +68,6 @@ func (r *router) handle(method, path string, handlers HandlersChain) {
 func (c *Core) addRoute(method, prefix string, handlers HandlersChain) {
 	assertS(prefix[0] == '/', "path must begin with '/'")
 	assertS(method != "", "HTTP method can not be empty")
-	assertS(len(handlers) > 0, "there must be at least one handler")
 
 	//debugPrintRoute(method, path, handlers)
 

@@ -125,31 +125,34 @@ func (c *Core) handleHTTPRequest(context *context) {
 	// Find root of the tree for the given HTTP method
 	t := c.trees
 	for i, tl := 0, len(t); i < tl; i++ {
+
 		if t[i].method != httpMethod {
 			continue
 		}
+
 		root := t[i].root
 		// Find route in tree
 		value := root.getValue(rPath, context.params, unescape)
 		if value.params != nil {
 			context.Param = *value.params
 		}
-		if value.handlers != nil {
+		if value.handlers != nil  {
 			context.handlers = value.handlers
 			context.path = value.fullPath
 			context.Next()
 			context.writermem.WriteHeaderNow()
 			return
 		}
-		if httpMethod != "CONNECT" && rPath != "/" {
-			if value.tsr && c.RedirectTrailingSlash {
-				redirectTrailingSlash(context)
-				return
-			}
-			//if c.RedirectFixedPath && redirectFixedPath(c, root, c.RedirectFixedPath) {
-			//	return
-			//}
-		}
+
+		//if httpMethod != "CONNECT" && rPath != "/" {
+		//	if value.tsr && c.RedirectTrailingSlash {
+		//		redirectTrailingSlash(context)
+		//		return
+		//	}
+		//	//if c.RedirectFixedPath && redirectFixedPath(c, root, c.RedirectFixedPath) {
+		//	//	return
+		//	//}
+		//}
 		break
 	}
 
@@ -160,7 +163,6 @@ func (c *Core) handleHTTPRequest(context *context) {
 	//		}
 	//		if value := tree.root.getValue(rPath, nil, unescape); value.handlers != nil {
 	//			c.handlers = c.allNoMethod
-	//			serveError(c, http.StatusMethodNotAllowed, default405Body)
 	//			return
 	//		}
 	//	}

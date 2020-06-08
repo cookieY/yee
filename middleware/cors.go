@@ -18,7 +18,7 @@ type CORSConfig struct {
 
 var DefaultCORSConfig = CORSConfig{
 	Origins:      []string{"*"},
-	AllowMethods: []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
+	AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete, http.MethodPatch, http.MethodHead, http.MethodOptions, http.MethodConnect, http.MethodTrace},
 }
 
 func Cors() yee.HandlerFunc {
@@ -44,6 +44,7 @@ func CorsWithConfig(config CORSConfig) yee.HandlerFunc {
 	maxAge := strconv.Itoa(config.MaxAge)
 	return yee.HandlerFunc{
 		Func: func(c yee.Context) (err error) {
+
 			localOrigin := c.GetHeader(yee.HeaderOrigin)
 
 			allowOrigin := ""
@@ -60,6 +61,7 @@ func CorsWithConfig(config CORSConfig) yee.HandlerFunc {
 					break
 				}
 			}
+
 			if m != http.MethodOptions {
 				c.AddHeader(yee.HeaderVary, yee.HeaderOrigin)
 				c.SetHeader(yee.HeaderAccessControlAllowOrigin, allowOrigin)
@@ -70,25 +72,6 @@ func CorsWithConfig(config CORSConfig) yee.HandlerFunc {
 					c.SetHeader(yee.HeaderAccessControlExposeHeaders, exposeHeaders)
 				}
 				c.Next()
-				return
-			}
-			if m != http.MethodOptions {
-				c.AddHeader(yee.HeaderVary, yee.HeaderOrigin)
-
-				c.AddHeader(yee.HeaderVary, yee.HeaderAccessControlRequestMethod)
-
-				c.AddHeader(yee.HeaderVary, yee.HeaderAccessControlRequestHeaders)
-
-				c.SetHeader(yee.HeaderAccessControlAllowOrigin, allowOrigin)
-
-				c.SetHeader(yee.HeaderAccessControlAllowMethods, allowMethods)
-
-				if config.AllowCredentials {
-					c.SetHeader(yee.HeaderAccessControlAllowCredentials, "true")
-				}
-				if exposeHeaders != "" {
-					c.SetHeader(yee.HeaderAccessControlExposeHeaders, exposeHeaders)
-				}
 				return
 			}
 
@@ -111,7 +94,6 @@ func CorsWithConfig(config CORSConfig) yee.HandlerFunc {
 			if config.MaxAge > 0 {
 				c.SetHeader(yee.HeaderAccessControlMaxAge, maxAge)
 			}
-			c.Next()
 			return
 		},
 		IsMiddleware: true,

@@ -11,16 +11,9 @@ import (
 
 func TestCors(t *testing.T) {
 	y := yee.New()
-	y.Use(CorsWithConfig(CORSConfig{
-		Origins:          []string{"*", "yearning.io"},
-		AllowMethods:     []string{http.MethodGet},
-		AllowHeaders:     []string{"Test"},
-		AllowCredentials: false,
-		ExposeHeaders:    nil,
-		MaxAge:           0,
-	}))
+	y.Use(Cors())
 
-	y.GET("/ok", func(c yee.Context) error {
+	y.POST("/login", func(c yee.Context) error {
 		return c.String(http.StatusOK, "test")
 	})
 
