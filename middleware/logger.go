@@ -2,11 +2,10 @@ package middleware
 
 import (
 	"fmt"
-	"github.com/labstack/echo/v4"
+	"github.com/cookieY/Yee"
 	"github.com/valyala/fasttemplate"
 	"io"
 	"log"
-	"yee"
 )
 
 type (
@@ -70,7 +69,7 @@ func LoggerWithConfig(config LoggerConfig) yee.HandlerFunc {
 				case "protocol":
 					return w.Write([]byte(context.Request().Proto))
 				case "bytes_in":
-					cl := context.Request().Header.Get(echo.HeaderContentLength)
+					cl := context.Request().Header.Get(yee.HeaderContentLength)
 					if cl == "" {
 						cl = "0"
 					}

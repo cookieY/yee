@@ -3,12 +3,12 @@ package middleware
 import (
 	"bufio"
 	"compress/gzip"
+	"github.com/cookieY/Yee"
 	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"strings"
-	"yee"
 )
 
 type GzipConfig struct {

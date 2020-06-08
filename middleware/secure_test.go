@@ -1,11 +1,11 @@
 package middleware
 
 import (
+	"github.com/cookieY/Yee"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"yee"
 )
 
 func TestSecure(t *testing.T) {
@@ -22,7 +22,7 @@ func TestSecure(t *testing.T) {
 		assert.Equal("ok", rec.Body.String())
 		assert.Equal(http.StatusOK, rec.Code)
 		assert.Equal("SAMEORIGIN", rec.Header().Get(yee.HeaderXFrameOptions))
-		assert.Equal("1; mode=block",rec.Header().Get(yee.HeaderXXSSProtection))
-		assert.Equal("nosniff",rec.Header().Get(yee.HeaderXContentTypeOptions))
+		assert.Equal("1; mode=block", rec.Header().Get(yee.HeaderXXSSProtection))
+		assert.Equal("nosniff", rec.Header().Get(yee.HeaderXContentTypeOptions))
 	})
 }

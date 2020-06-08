@@ -1,10 +1,10 @@
 package middleware
 
 import (
+	"github.com/cookieY/Yee"
 	"net/http"
 	"strconv"
 	"strings"
-	"yee"
 )
 
 type CORSConfig struct {
