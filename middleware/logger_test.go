@@ -1,11 +1,11 @@
 package middleware
 
 import (
+	"github.com/cookieY/Yee"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"yee"
 )
 
 func TestLogger(t *testing.T) {

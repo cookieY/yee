@@ -1,11 +1,11 @@
 package middleware
 
 import (
+	"github.com/cookieY/Yee"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"yee"
 )
 
 func TestRecovery(t *testing.T) {
@@ -24,4 +24,3 @@ func TestRecovery(t *testing.T) {
 		assert.Equal(http.StatusInternalServerError, rec.Code)
 	})
 }
-

@@ -3,11 +3,11 @@ package middleware
 import (
 	"errors"
 	"fmt"
+	"github.com/cookieY/Yee"
 	"github.com/dgrijalva/jwt-go"
 	"net/http"
 	"reflect"
 	"strings"
-	"yee"
 )
 
 type JwtConfig struct {
@@ -72,14 +72,14 @@ func JWTWithConfig(config JwtConfig) yee.HandlerFunc {
 		Func: func(c yee.Context) (err error) {
 			auth, err := extractor(c)
 			if err != nil {
-				c.ServerError(http.StatusBadRequest, []byte(err.Error()),true)
+				c.ServerError(http.StatusBadRequest, []byte(err.Error()), true)
 				return err
 			}
 			token := new(jwt.Token)
 			if _, ok := config.Claims.(jwt.MapClaims); ok {
 				token, err = jwt.Parse(auth, config.keyFunc)
 				if err != nil {
-					c.ServerError(http.StatusUnauthorized, []byte(err.Error()),true)
+					c.ServerError(http.StatusUnauthorized, []byte(err.Error()), true)
 					return err
 				}
 			} else {

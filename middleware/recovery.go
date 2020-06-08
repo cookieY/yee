@@ -2,10 +2,10 @@ package middleware
 
 import (
 	"fmt"
+	"github.com/cookieY/Yee"
 	"net/http"
 	"runtime"
 	"strings"
-	"yee"
 )
 
 func trace(info string) string {
@@ -28,7 +28,7 @@ func Recovery() yee.HandlerFunc {
 				if err := recover(); err != nil {
 					message := fmt.Sprintf("%s", err)
 					c.Logger().Critical(trace(message))
-					c.ServerError(http.StatusInternalServerError,[]byte("Internal Server Error"),true)
+					c.ServerError(http.StatusInternalServerError, []byte("Internal Server Error"), true)
 				}
 			}()
 			c.Next()

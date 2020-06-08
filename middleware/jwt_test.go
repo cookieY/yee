@@ -3,13 +3,13 @@ package middleware
 import (
 	"errors"
 	"fmt"
+	"github.com/cookieY/Yee"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
-	"yee"
 )
 
 func GenJwtToken() (string, error) {
@@ -30,10 +30,10 @@ func TestJwt(t *testing.T) {
 		Name     string
 		Expected int
 		IsSign   bool
-		Expire  time.Duration
+		Expire   time.Duration
 	}{
-		{"not_token", 400, false,0},
-		{"test_is_ok", 200, true,0},
+		{"not_token", 400, false, 0},
+		{"test_is_ok", 200, true, 0},
 		//{"test_is_expire", 401, true,time.Second * 1},
 	}
 	for _, i := range cases {

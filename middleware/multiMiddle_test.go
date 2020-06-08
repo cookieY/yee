@@ -1,11 +1,11 @@
 package middleware
 
 import (
+	"github.com/cookieY/Yee"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"yee"
 )
 
 func TestMultiMiddle(t *testing.T) {
@@ -28,7 +28,7 @@ func TestMultiMiddle(t *testing.T) {
 
 func TestMultiGroup(t *testing.T) {
 	y := yee.New()
-	r := y.Group("/", Cors(), JWTWithConfig(JwtConfig{SigningKey: []byte("dbcjqheupqjsuwsm")}),Logger())
+	r := y.Group("/", Cors(), JWTWithConfig(JwtConfig{SigningKey: []byte("dbcjqheupqjsuwsm")}), Logger())
 	r.GET("/test", func(context yee.Context) error {
 		return context.String(http.StatusOK, "is_ok")
 	})
