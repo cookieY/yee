@@ -96,9 +96,7 @@ func (c *context) Next() {
 		if c.intercept && !c.handlers[c.index].IsMiddleware {
 			continue
 		} else {
-			if err := c.handlers[c.index].Func(c); err != nil {
-				fmt.Println(err.Error())
-			}
+			_ = c.handlers[c.index].Func(c)
 		}
 	}
 }
@@ -114,7 +112,7 @@ func (c *context) ServerError(code int, defaultMessage []byte, IsMiddleware bool
 		return
 	}
 	if c.writermem.Status() == code {
-		c.writermem.Header()["Content-Type"] = []string{MIMETextPlain}
+		c.writermem.Header()["Content-Type"] = []string{MIMETextPlainCharsetUTF8}
 		_, err := c.w.Write(defaultMessage)
 		if err != nil {
 			//fmt.Println(err.Error())

@@ -53,7 +53,7 @@ const banner = `
 `
 
 // init Core
-func New() *Core {
+func InitCore() *Core {
 	router := &router{
 		handlers: nil,
 		root:     true,
@@ -70,10 +70,14 @@ func New() *Core {
 		return core.allocateContext()
 	}
 
-	fmt.Printf(banner, Version)
-
 	return core
 }
+
+func New() *Core {
+	fmt.Printf(banner, Version)
+	return InitCore()
+}
+
 func (c *Core) allocateContext() *context {
 	v := make(Params, 0, c.maxParams)
 	return &context{engine: c, params: &v, index: -1}

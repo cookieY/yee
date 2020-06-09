@@ -63,7 +63,6 @@ func CorsWithConfig(config CORSConfig) yee.HandlerFunc {
 					break
 				}
 			}
-
 			if m != http.MethodOptions {
 				c.AddHeader(yee.HeaderVary, yee.HeaderOrigin)
 				c.SetHeader(yee.HeaderAccessControlAllowOrigin, allowOrigin)
