@@ -63,12 +63,12 @@ func newBrush(color string) coloring {
 }
 
 var colors = []coloring{
-	newBrush("0;31"), // Critical          红色
-	newBrush("0;35"), // Error              紫色
-	newBrush("0;33"), // Warn           黄色
-	newBrush("0;34"), // Trace               白色
-	newBrush("0;34"), // Info              蓝色
-	newBrush("0;37"), // Debug               白色
+	newBrush("0;31"), // Critical    red
+	newBrush("0;35"), // Error       purple
+	newBrush("0;33"), // Warn        yellow
+	newBrush("0;34"), // Trace       white
+	newBrush("0;34"), // Info        blue
+	newBrush("0;37"), // Debug       white
 }
 
 var mappingLevel = map[uint8]string{

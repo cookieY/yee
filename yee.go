@@ -3,7 +3,7 @@ package yee
 import (
 	"fmt"
 	"net/http"
-	"path"
+	"os"
 	"sync"
 )
 
@@ -99,6 +99,11 @@ func (c *Core) rebuild405Handlers() {
 }
 
 // override Handler.ServeHTTP
+// all requests/response deal with here
+// we use sync.pool save context variable
+// because we do this can be used less memory
+// we just only reset context, when before callback c.handleHTTPRequest func
+// and put context variable into poll
 func (c *Core) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	context := c.pool.Get().(*context)
 	context.writermem.reset(w)
@@ -112,7 +117,8 @@ func (c *Core) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (c *Core) Start(addr string) {
 	if err := http.ListenAndServe(addr, c); err != nil {
-		panic(err)
+		c.l.Critical(err.Error())
+		os.Exit(1)
 	}
 }
 
@@ -129,14 +135,6 @@ func (c *Core) handleHTTPRequest(context *context) {
 	httpMethod := context.r.Method
 	rPath := context.r.URL.Path
 	unescape := false
-	//if engine.UseRawPath && len(context.Request().URL.RawPath) > 0 {
-	//	rPath = c.Request.URL.RawPath
-	//	unescape = engine.UnescapePathValues
-	//}
-	//
-	//if engine.RemoveExtraSlash {
-	//	rPath = cleanPath(rPath)
-	//}
 
 	// Find root of the tree for the given HTTP method
 	t := c.trees
@@ -160,30 +158,9 @@ func (c *Core) handleHTTPRequest(context *context) {
 			return
 		}
 
-		//if httpMethod != "CONNECT" && rPath != "/" {
-		//	if value.tsr && c.RedirectTrailingSlash {
-		//		redirectTrailingSlash(context)
-		//		return
-		//	}
-		//	//if c.RedirectFixedPath && redirectFixedPath(c, root, c.RedirectFixedPath) {
-		//	//	return
-		//	//}
-		//}
 		break
 	}
-
-	//if c.HandleMethodNotAllowed {
-	//	for _, tree := range c.trees {
-	//		if tree.method == httpMethod {
-	//			continue
-	//		}
-	//		if value := tree.root.getValue(rPath, nil, unescape); value.handlers != nil {
-	//			c.handlers = c.allNoMethod
-	//			return
-	//		}
-	//	}
-	//}
-
+	fmt.Println(c.allNoRoute)
 	context.handlers = c.allNoRoute
 
 	if httpMethod == http.MethodOptions {
@@ -207,42 +184,5 @@ func serveError(c *context, code int, defaultMessage []byte) {
 		}
 		return
 	}
-	c.writermem.WriteHeaderNow()
-}
-
-func redirectTrailingSlash(c *context) {
-	req := c.r
-	p := req.URL.Path
-	if prefix := path.Clean(c.r.Header.Get("X-Forwarded-Prefix")); prefix != "." {
-		p = prefix + "/" + req.URL.Path
-	}
-	req.URL.Path = p + "/"
-	if length := len(p); length > 1 && p[length-1] == '/' {
-		req.URL.Path = p[:length-1]
-	}
-	redirectRequest(c)
-}
-
-//func redirectFixedPath(c *context, root *node, trailingSlash bool) bool {
-//	req := c.r
-//	rPath := req.URL.Path
-//
-//	if fixedPath, ok := root.findCaseInsensitivePath(cleanPath(rPath), trailingSlash); ok {
-//		req.URL.Path = BytesToString(fixedPath)
-//		redirectRequest(c)
-//		return true
-//	}
-//	return false
-//}
-
-func redirectRequest(c *context) {
-	req := c.r
-	rURL := req.URL.String()
-
-	code := http.StatusMovedPermanently // Permanent redirect, request with GET method
-	if req.Method != http.MethodGet {
-		code = http.StatusTemporaryRedirect
-	}
-	http.Redirect(c.w, req, rURL, code)
 	c.writermem.WriteHeaderNow()
 }

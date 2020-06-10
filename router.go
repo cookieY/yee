@@ -13,7 +13,9 @@ type router struct {
 	basePath string
 }
 
-// todo: Implement the HTTP method and add router table
+// Implement the HTTP method and add to the router table
+// GET,POST,PUT,DELETE,OPTIONS,TRACE,HEAD,PATCH
+// these are defined in RFC 7231 section 4.3.
 
 func (r *router) GET(path string, handler UserFunc) {
 	r.handle(http.MethodGet, path, []HandlerFunc{{Func: handler}})
@@ -21,10 +23,6 @@ func (r *router) GET(path string, handler UserFunc) {
 
 func (r *router) POST(path string, handler UserFunc) {
 	r.handle(http.MethodPost, path, []HandlerFunc{{Func: handler}})
-}
-
-func (r *router) PATCH(path string, handler UserFunc) {
-	r.handle(http.MethodPatch, path, []HandlerFunc{{Func: handler}})
 }
 
 func (r *router) PUT(path string, handler UserFunc) {
@@ -35,8 +33,16 @@ func (r *router) DELETE(path string, handler UserFunc) {
 	r.handle(http.MethodDelete, path, []HandlerFunc{{Func: handler}})
 }
 
+func (r *router) PATCH(path string, handler UserFunc) {
+	r.handle(http.MethodPatch, path, []HandlerFunc{{Func: handler}})
+}
+
 func (r *router) HEAD(path string, handler UserFunc) {
 	r.handle(http.MethodHead, path, []HandlerFunc{{Func: handler}})
+}
+
+func (r *router) TRACE(path string, handler UserFunc) {
+	r.handle(http.MethodTrace, path, []HandlerFunc{{Func: handler}})
 }
 
 func (r *router) OPTIONS(path string, handler UserFunc) {
@@ -48,11 +54,17 @@ func (r *router) Use(middleware ...HandlerFunc) {
 }
 
 func (r *router) Group(prefix string, handlers ...HandlerFunc) *router {
-	return &router{
+	rx := &router{
 		handlers: r.combineHandlers(handlers),
 		core:     r.core,
 		basePath: r.calculateAbsolutePath(prefix),
 	}
+	// when we dose not match prefix or method
+	// we`ll register noRoute or noMethod handle for this
+	// otherwise, we cannot be verified for noRoute/noMethod
+	rx.core.allNoRoute = rx.combineHandlers(r.core.noRoute)
+	rx.core.allNoMethod = rx.combineHandlers(r.core.noMethod)
+	return rx
 }
 
 func (r *router) handle(method, path string, handlers HandlersChain) {
@@ -64,8 +76,6 @@ func (r *router) handle(method, path string, handlers HandlersChain) {
 func (c *Core) addRoute(method, prefix string, handlers HandlersChain) {
 	assertS(prefix[0] == '/', "path must begin with '/'")
 	assertS(method != "", "HTTP method can not be empty")
-
-	//debugPrintRoute(method, path, handlers)
 
 	root := c.trees.get(method)
 	if root == nil {

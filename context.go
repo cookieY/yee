@@ -56,7 +56,7 @@ type context struct {
 	path      string
 	method    string
 	code      int
-	queryList url.Values // 保存QueryParam
+	queryList url.Values // cache url.Values
 	params    *Params
 	Param     Params
 	// middleware
@@ -75,17 +75,17 @@ func (c *context) Reset() {
 	c.handlers = c.engine.noRoute
 }
 
-func (c *context) reset() {
+func (c *context) reset() { // reset context members
 	c.w = &c.writermem
 	c.Param = c.Param[0:0]
 	c.handlers = nil
 	c.index = -1
 	c.path = ""
-	//c.Keys = nil
-	//c.Errors = c.Errors[0:0]
 	c.Accepted = nil
-	//c.queryCache = nil
-	//c.formCache = nil
+	// when context reset clear queryList cache .
+	// cause if not clear cache the queryParams results will mistake
+	c.queryList = nil
+	c.store = nil
 	*c.params = (*c.params)[0:0]
 }
 
@@ -224,7 +224,6 @@ func (c *context) QueryParams() map[string][]string {
 }
 
 func (c *context) QueryParam(name string) string {
-	// 判断queryList是否为空,如果为空 调用c.r.URL.Query() 方法获取URL Query值
 	if c.queryList == nil {
 		c.queryList = c.r.URL.Query()
 	}

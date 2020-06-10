@@ -29,8 +29,7 @@ func TestMultiMiddle(t *testing.T) {
 
 func TestMultiGroup(t *testing.T) {
 	y := yee.New()
-	y.Use(Cors())
-	r := y.Group("/",CustomerMiddleware())
+	r := y.Group("/",Cors(),CustomerMiddleware())
 	r.POST("/login", func(context yee.Context) error {
 		return context.String(http.StatusOK, "is_ok")
 	})
