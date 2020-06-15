@@ -5,6 +5,7 @@ package yee
 // license that can be found in the LICENSE file.
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -71,7 +72,7 @@ func (w *responseWriter) reset(writer http.ResponseWriter) {
 func (w *responseWriter) WriteHeader(code int) {
 	if code > 0 && w.status != code {
 		if w.Written() {
-			//fmt.Printf("[WARNING] Headers were already written. Wanted to override status code %d with %d", w.status, code)
+			fmt.Printf("[WARNING] Headers were already written. Wanted to override status code %d with %d", w.status, code)
 		}
 		w.status = code
 	}

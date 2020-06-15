@@ -2,6 +2,7 @@ package yee
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"math"
@@ -40,12 +41,16 @@ type Context interface {
 	HTMLTml(code int, tml string) (err error)
 	QueryParams() map[string][]string
 	Bind(i interface{}) error
+	Cookie(name string) (*http.Cookie, error)
+	SetCookie(cookie *http.Cookie)
+	Cookies() []*http.Cookie
 	Get(key string) interface{}
 	Put(key string, values interface{})
-	ServerError(code int, defaultMessage []byte, IsMiddleware bool)
+	ServerError(code int, defaultMessage string)
 	RemoteIp() string
 	Logger() Logger
 	Reset()
+	ServerCritical(code int, err error) error
 }
 
 type context struct {
@@ -92,12 +97,17 @@ func (c *context) reset() { // reset context members
 func (c *context) Next() {
 	c.index++
 	s := len(c.handlers)
+	c.SetHeader(HeaderServer, "yee")
 	for ; c.index < s; c.index++ {
+
 		if c.intercept && !c.handlers[c.index].IsMiddleware {
 			continue
 		} else {
-			_ = c.handlers[c.index].Func(c)
+			if err := c.handlers[c.index].Func(c); err != nil {
+				//fmt.Println(err.Error())
+			}
 		}
+
 	}
 }
 
@@ -105,15 +115,33 @@ func (c *context) Logger() Logger {
 	return &c.engine.l
 }
 
-func (c *context) ServerError(code int, defaultMessage []byte, IsMiddleware bool) {
-	c.intercept = IsMiddleware
+func (c *context) ServerCritical(code int, err error) error {
+	c.intercept = true
+	c.writermem.status = code
+	if c.writermem.Written() {
+		return errors.New("Headers were already written")
+	}
+	if c.writermem.Status() == code {
+		c.writermem.Header()["Content-Type"] = []string{MIMETextPlainCharsetUTF8}
+		_, err := c.w.Write([]byte(err.Error()))
+		if err != nil {
+			return errors.New(fmt.Sprintf("cannot write message to writer during serve error: %v", err))
+		}
+		return nil
+	}
+	c.writermem.WriteHeaderNow()
+	return err
+}
+
+func (c *context) ServerError(code int, defaultMessage string) {
+	c.intercept = true
 	c.writermem.status = code
 	if c.writermem.Written() {
 		return
 	}
 	if c.writermem.Status() == code {
 		c.writermem.Header()["Content-Type"] = []string{MIMETextPlainCharsetUTF8}
-		_, err := c.w.Write(defaultMessage)
+		_, err := c.w.Write([]byte(defaultMessage))
 		if err != nil {
 			//fmt.Println(err.Error())
 			//debugPrint("cannot write message to writer during serve error: %v", err)
@@ -219,6 +247,18 @@ func (c *context) Params(name string) string {
 	return ""
 }
 
+func (c *context) Cookie(name string) (*http.Cookie, error) {
+	return c.r.Cookie(name)
+}
+
+func (c *context) SetCookie(cookie *http.Cookie) {
+	http.SetCookie(c.w, cookie)
+}
+
+func (c *context) Cookies() []*http.Cookie {
+	return c.r.Cookies()
+}
+
 func (c *context) QueryParams() map[string][]string {
 	return c.r.URL.Query()
 }
@@ -290,7 +330,7 @@ func (c *context) Redirect(code int, uri string) error {
 	if code < 300 || code > 308 {
 		return ErrInvalidRedirectCode
 	}
-	c.r.Header.Set("Location", uri)
+	c.r.Header.Set(HeaderLocation, uri)
 	c.w.WriteHeader(code)
 	return nil
 }

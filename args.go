@@ -8,7 +8,6 @@ import (
 const (
 	HeaderAccept              = "Accept"
 	HeaderAcceptEncoding      = "Accept-Encoding"
-	HeaderAllow               = "Allow"
 	HeaderAuthorization       = "Authorization"
 	HeaderContentDisposition  = "Content-Disposition"
 	HeaderContentEncoding     = "Content-Encoding"
@@ -52,6 +51,7 @@ const (
 	HeaderContentSecurityPolicy           = "Content-Security-Policy"
 	HeaderContentSecurityPolicyReportOnly = "Content-Security-Policy-Report-Only"
 	HeaderXCSRFToken                      = "X-CSRF-Token"
+	HeaderReferrerPolicy                  = "Referrer-Policy"
 )
 
 const (

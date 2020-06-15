@@ -9,14 +9,15 @@ import (
 )
 
 func TestRecovery(t *testing.T) {
-	y := yee.New()
+	y := yee.InitCore()
 	y.Use(Recovery())
-	y.GET("/", func(context yee.Context) error {
-		var t error
-		return context.String(http.StatusOK, t.Error())
+	y.GET("/y", func(context yee.Context) error {
+		names := []string{"geektutu"}
+		return context.String(http.StatusOK, names[100])
 	})
+
 	t.Run("http_get", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req := httptest.NewRequest(http.MethodGet, "/y", nil)
 		rec := httptest.NewRecorder()
 		y.ServeHTTP(rec, req)
 		assert := assert.New(t)

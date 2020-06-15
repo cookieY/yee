@@ -74,8 +74,13 @@ func (r *router) handle(method, path string, handlers HandlersChain) {
 }
 
 func (c *Core) addRoute(method, prefix string, handlers HandlersChain) {
-	assertS(prefix[0] == '/', "path must begin with '/'")
-	assertS(method != "", "HTTP method can not be empty")
+	if prefix[0] != '/' {
+		panic("path must begin with '/'")
+	}
+
+	if method == "" {
+		panic("HTTP method can not be empty")
+	}
 
 	root := c.trees.get(method)
 	if root == nil {

@@ -2,6 +2,9 @@ package yee
 
 import (
 	"fmt"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
+	"log"
 	"net/http"
 	"os"
 	"sync"
@@ -23,6 +26,7 @@ type Core struct {
 	pool                   sync.Pool
 	maxParams              uint16
 	HandleMethodNotAllowed bool
+	H2server               *http.Server
 	allNoRoute             HandlersChain
 	allNoMethod            HandlersChain
 	noRoute                HandlersChain
@@ -104,6 +108,7 @@ func (c *Core) rebuild405Handlers() {
 // because we do this can be used less memory
 // we just only reset context, when before callback c.handleHTTPRequest func
 // and put context variable into poll
+
 func (c *Core) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	context := c.pool.Get().(*context)
 	context.writermem.reset(w)
@@ -115,11 +120,35 @@ func (c *Core) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c.pool.Put(context)
 }
 
-func (c *Core) Start(addr string) {
+func (c *Core) Run(addr string) {
 	if err := http.ListenAndServe(addr, c); err != nil {
 		c.l.Critical(err.Error())
 		os.Exit(1)
 	}
+}
+
+
+// golang supports http2,if client supports http2
+// Otherwise, the http protocol return to http1.1
+func (c *Core) RunTLS(addr, certFile, keyFile string) {
+	if err := http.ListenAndServeTLS(addr, certFile, keyFile, c); err != nil {
+		c.l.Critical(err.Error())
+		os.Exit(1)
+	}
+}
+
+// In normal conditions, http2 must used certificate
+// H2C is non-certificate`s http2
+// notes:
+// 1.the browser is not supports H2C proto, you should write your web client test program
+// 2.the H2C protocol is not safety
+func (c *Core) RunH2C(addr string) {
+	s := &http2.Server{}
+	h1s := &http.Server{
+		Addr:    addr,
+		Handler: h2c.NewHandler(c, s),
+	}
+	log.Fatal(h1s.ListenAndServe())
 }
 
 // NewHTTPError creates a new HTTPError instance.
@@ -160,8 +189,14 @@ func (c *Core) handleHTTPRequest(context *context) {
 
 		break
 	}
-	fmt.Println(c.allNoRoute)
+
 	context.handlers = c.allNoRoute
+
+	// Notice
+	// We must judge whether an empty request is OPTIONS method,
+	// Because when complex request (XMLHttpRequest) will send an OPTIONS request and fetch the preflight resource.
+	// But in general, we do not register an OPTIONS handle,
+	// So this may cause some middleware errors.
 
 	if httpMethod == http.MethodOptions {
 		serveError(context, 200, []byte("preflight resource"))

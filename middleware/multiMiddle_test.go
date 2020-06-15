@@ -29,19 +29,19 @@ func TestMultiMiddle(t *testing.T) {
 
 func TestMultiGroup(t *testing.T) {
 	y := yee.New()
-	r := y.Group("/",Cors(),CustomerMiddleware())
-	r.POST("/login", func(context yee.Context) error {
+	//r := y.Group("/",Cors(),CustomerMiddleware())
+	y.GET("/login", func(context yee.Context) error {
 		return context.String(http.StatusOK, "is_ok")
 	})
-	//y.Start(":8000")
-	req := httptest.NewRequest(http.MethodGet, "/test?test=33", nil)
-	rec := httptest.NewRecorder()
-
-	a := assert.New(t)
-	y.ServeHTTP(rec, req)
-	a.Equal("非法越权操作！", rec.Body.String())
-	a.Equal("*", rec.Header().Get(yee.HeaderAccessControlAllowOrigin))
-	a.Equal(403, rec.Code)
+	y.Run(":8000")
+	//req := httptest.NewRequest(http.MethodGet, "/test?test=33", nil)
+	//rec := httptest.NewRecorder()
+	//
+	//a := assert.New(t)
+	//y.ServeHTTP(rec, req)
+	//a.Equal("非法越权操作！", rec.Body.String())
+	//a.Equal("*", rec.Header().Get(yee.HeaderAccessControlAllowOrigin))
+	//a.Equal(403, rec.Code)
 }
 
 func CustomerMiddleware() yee.HandlerFunc {
@@ -52,7 +52,7 @@ func CustomerMiddleware() yee.HandlerFunc {
 				c.Next()
 				return
 			}
-			c.ServerError(http.StatusForbidden, []byte("非法越权操作！"), true)
+			c.ServerError(http.StatusForbidden, "非法越权操作！")
 			return
 		},
 		IsMiddleware: true,

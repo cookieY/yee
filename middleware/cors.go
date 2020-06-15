@@ -17,8 +17,18 @@ type CORSConfig struct {
 }
 
 var DefaultCORSConfig = CORSConfig{
-	Origins:      []string{"*"},
-	AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete, http.MethodPatch, http.MethodHead, http.MethodOptions, http.MethodConnect, http.MethodTrace},
+	Origins: []string{"*"},
+	AllowMethods: []string{
+		http.MethodGet,
+		http.MethodPut,
+		http.MethodPost,
+		http.MethodDelete,
+		http.MethodPatch,
+		http.MethodHead,
+		http.MethodOptions,
+		http.MethodConnect,
+		http.MethodTrace,
+	},
 }
 
 func Cors() yee.HandlerFunc {
@@ -63,6 +73,13 @@ func CorsWithConfig(config CORSConfig) yee.HandlerFunc {
 					break
 				}
 			}
+
+			// when method was not OPTIONS,
+			// we can return simple response header
+			// because the OPTIONS method is used to
+			// describe the communication options for the target resource
+			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/OPTIONS
+
 			if m != http.MethodOptions {
 				c.AddHeader(yee.HeaderVary, yee.HeaderOrigin)
 				c.SetHeader(yee.HeaderAccessControlAllowOrigin, allowOrigin)

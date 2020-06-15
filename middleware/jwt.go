@@ -72,14 +72,14 @@ func JWTWithConfig(config JwtConfig) yee.HandlerFunc {
 		Func: func(c yee.Context) (err error) {
 			auth, err := extractor(c)
 			if err != nil {
-				c.ServerError(http.StatusBadRequest, []byte(err.Error()), true)
+				c.ServerError(http.StatusBadRequest, err.Error())
 				return err
 			}
 			token := new(jwt.Token)
 			if _, ok := config.Claims.(jwt.MapClaims); ok {
 				token, err = jwt.Parse(auth, config.keyFunc)
 				if err != nil {
-					c.ServerError(http.StatusUnauthorized, []byte(err.Error()), true)
+					c.ServerError(http.StatusUnauthorized, err.Error())
 					return err
 				}
 			} else {
@@ -91,7 +91,11 @@ func JWTWithConfig(config JwtConfig) yee.HandlerFunc {
 				c.Put(config.GetKey, token)
 				return
 			}
-			return err
+			// bug fix
+			// if  invalid or expired jwt,
+			// we must intercept all handlers and return serverError
+			c.ServerError(http.StatusUnauthorized, "invalid or expired jwt")
+			return
 		},
 		IsMiddleware: true,
 	}

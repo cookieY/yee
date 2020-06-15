@@ -7,7 +7,6 @@ import (
 
 type (
 	SecureConfig struct {
-
 		XSSProtection string `yaml:"xss_protection"`
 
 		ContentTypeNosniff string `yaml:"content_type_nosniff"`
@@ -64,6 +63,21 @@ func SecureWithConfig(config SecureConfig) yee.HandlerFunc {
 					subdomains = fmt.Sprintf("%s; preload", subdomains)
 				}
 				c.SetHeader(yee.HeaderStrictTransportSecurity, fmt.Sprintf("max-age=%d%s", config.HSTSMaxAge, subdomains))
+			}
+			// CSP
+			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy-Report-Only
+			// https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_Security_Policy
+			if config.ContentSecurityPolicy != "" {
+				if config.CSPReportOnly {
+					c.SetHeader(yee.HeaderContentSecurityPolicyReportOnly, config.ContentSecurityPolicy)
+				} else {
+					c.SetHeader(yee.HeaderContentSecurityPolicy, config.ContentSecurityPolicy)
+				}
+			}
+
+			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
+			if config.ReferrerPolicy != "" {
+				c.SetHeader(yee.HeaderReferrerPolicy, config.ReferrerPolicy)
 			}
 			return
 		},
