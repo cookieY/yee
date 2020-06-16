@@ -87,6 +87,7 @@ func (c *context) reset() { // reset context members
 	c.index = -1
 	c.path = ""
 	c.Accepted = nil
+	c.intercept = false
 	// when context reset clear queryList cache .
 	// cause if not clear cache the queryParams results will mistake
 	c.queryList = nil

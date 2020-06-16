@@ -49,18 +49,19 @@ type YeeConfig struct {
 	Banner bool
 }
 
-const Version = "Yee v0.0.1"
+const Version = "v0.0.1"
+
+const creator =  "Creator: Henry Yee"
+const title =  "-----Easier and Faster-----"
 
 const banner = `
-  ___    ___ _______   _______      
- |\  \  /  /|\  ___ \ |\  ___ \     
- \ \  \/  / | \   __/|\ \   __/|    
-  \ \    / / \ \  \_|/_\ \  \_|/__  
-   \/  /  /   \ \  \_|\ \ \  \_|\ \ 
- __/  / /      \ \_______\ \_______\
-|\___/ /        \|_______|\|_______|  %s
-\|___|/
-
+    __  __          
+    _ \/ /_________ 
+    __  /_  _ \  _ \
+    _  / /  __/  __/
+    /_/  \___/\___/   %s
+%s
+%s
 `
 
 func New() *Core {
@@ -71,12 +72,10 @@ func New() *Core {
 		basePath: "/",
 	}
 
-	logger := LogCreator()
-
 	core := &Core{
 		trees:  make(methodTrees, 0, 0),
 		router: router,
-		l:      logger,
+		l:      LogCreator(),
 	}
 
 	core.core = core
@@ -84,8 +83,7 @@ func New() *Core {
 	core.pool.New = func() interface{} {
 		return core.allocateContext()
 	}
-
-	core.l.producer.Printf(banner, core.l.producer.Green(Version))
+	core.l.producer.Printf(banner, core.l.producer.Green(Version),core.l.producer.Red(title),core.l.producer.Cyan(creator))
 	return core
 }
 
@@ -126,7 +124,6 @@ func (c *Core) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	context.r = r
 	context.reset()
 	c.handleHTTPRequest(context)
-	context.ServerError(http.StatusTooManyRequests, "too many requests")
 	c.pool.Put(context)
 
 }

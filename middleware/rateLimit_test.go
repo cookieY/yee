@@ -14,16 +14,16 @@ import (
 func TestRateLimit(t *testing.T) {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	y := yee.New()
-	y.Use(RateLimitWithConfig(RateLimitConfig{Rate: 4,Time: time.Second * 2}))
+	y.Use(RateLimitWithConfig(RateLimitConfig{Rate: 1,Time: time.Second * 2}))
 	y.GET("/", func(context yee.Context) (err error) {
 		return context.String(http.StatusOK, "ok")
 	})
 	var wg sync.WaitGroup
 	var once sync.Once
-	for i := 0; i < 10; i++ {
-		if i > 5 {
+	for i := 0; i < 50; i++ {
+		if i > 25 {
 			once.Do(func() {
-				time.Sleep(time.Second * 1)
+				time.Sleep(time.Second * 2)
 			})
 		}
 		wg.Add(1)
@@ -31,7 +31,7 @@ func TestRateLimit(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, "/", nil)
 			rec := httptest.NewRecorder()
 			y.ServeHTTP(rec, req)
-			fmt.Printf("id: %d  code:%d \n",i,rec.Code)
+			fmt.Printf("id: %d  code:%d body:%s \n",i,rec.Code,rec.Body.String())
 			wg.Done()
 		}(i)
 	}

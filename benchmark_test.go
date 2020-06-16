@@ -3,6 +3,7 @@ package yee
 import (
 	"net/http"
 	"net/http/httptest"
+	"runtime"
 	"testing"
 )
 
@@ -401,6 +402,7 @@ func BenchmarkYeeGitHubAPI(b *testing.B) {
 
 
 func Benchmark(b *testing.B) {
+	runtime.GOMAXPROCS(runtime.NumCPU())
 	b.Run("BenchmarkYeeGplusAPI", BenchmarkYeeGplusAPI)
 	b.Run("BenchmarkYeeParseAPI", BenchmarkYeeParseAPI)
 	b.Run("BenchmarkYeeGitHubAPI", BenchmarkYeeGitHubAPI)
