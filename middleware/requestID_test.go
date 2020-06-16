@@ -9,7 +9,7 @@ import (
 )
 
 func TestRequestID(t *testing.T) {
-	y := yee.InitCore()
+	y := yee.New()
 	y.Use(RequestID())
 	y.GET("/", func(context yee.Context) error {
 		return context.String(http.StatusOK, "ok")

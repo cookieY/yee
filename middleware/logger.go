@@ -81,7 +81,7 @@ func LoggerWithConfig(config LoggerConfig) yee.HandlerFunc {
 				}
 			})
 			if context.Response().Status() < 400 {
-				logger.Trace(s)
+				logger.Info(s)
 			} else {
 				logger.Warn(s)
 			}

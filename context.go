@@ -112,7 +112,7 @@ func (c *context) Next() {
 }
 
 func (c *context) Logger() Logger {
-	return &c.engine.l
+	return c.engine.l
 }
 
 func (c *context) ServerCritical(code int, err error) error {

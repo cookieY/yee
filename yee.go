@@ -2,6 +2,7 @@ package yee
 
 import (
 	"fmt"
+	"github.com/cookieY/yee/color"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"log"
@@ -31,15 +32,22 @@ type Core struct {
 	allNoMethod            HandlersChain
 	noRoute                HandlersChain
 	noMethod               HandlersChain
-	l                      logger
+	l                      *logger
+	color                  *color.Color
 	RedirectTrailingSlash  bool
 	RedirectFixedPath      bool
+	Banner                 bool
+	//color                  print
 }
 
 type HTTPError struct {
 	Code     int
 	Message  interface{}
 	Internal error // Stores the error returned by an external dependency
+}
+
+type YeeConfig struct {
+	Banner bool
 }
 
 const Version = "Yee v0.0.1"
@@ -56,30 +64,35 @@ const banner = `
 
 `
 
-// init Core
-func InitCore() *Core {
+func New() *Core {
+
 	router := &router{
 		handlers: nil,
 		root:     true,
 		basePath: "/",
 	}
 
+	logger := LogCreator()
+
 	core := &Core{
 		trees:  make(methodTrees, 0, 0),
 		router: router,
-		l:      logger{level: 6},
+		l:      logger,
 	}
+
 	core.core = core
+
 	core.pool.New = func() interface{} {
 		return core.allocateContext()
 	}
 
+	core.l.producer.Printf(banner, core.l.producer.Green(Version))
+
 	return core
 }
 
-func New() *Core {
-	fmt.Printf(banner, Version)
-	return InitCore()
+func (c *Core) SetLogLevel(l uint8) {
+	c.l.SetLevel(l)
 }
 
 func (c *Core) allocateContext() *context {
@@ -126,7 +139,6 @@ func (c *Core) Run(addr string) {
 		os.Exit(1)
 	}
 }
-
 
 // golang supports http2,if client supports http2
 // Otherwise, the http protocol return to http1.1

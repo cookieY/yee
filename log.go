@@ -2,6 +2,7 @@ package yee
 
 import (
 	"fmt"
+	"github.com/cookieY/yee/color"
 	"os"
 	"runtime"
 	"strings"
@@ -13,7 +14,6 @@ const (
 	Critical = iota
 	Error
 	Warning
-	Trace
 	Info
 	Debug
 )
@@ -24,6 +24,7 @@ type logger struct {
 	sync.Mutex
 	level    uint8
 	isLogger bool
+	producer *color.Color
 }
 
 type Logger interface {
@@ -32,14 +33,14 @@ type Logger interface {
 	Warn(msg string)
 	Info(msg string)
 	Debug(msg string)
-	Trace(msg string)
 	SetLevel(level uint8)
 }
 
-type coloring func(string) string
-
 func LogCreator() *logger {
-	return new(logger)
+	l := new(logger)
+	l.producer = color.New()
+	l.producer.Enable()
+	return l
 }
 
 func (l *logger) SetLevel(level uint8) {
@@ -54,35 +55,17 @@ func (l *logger) IsLogger(p bool) {
 	l.isLogger = p
 }
 
-func newBrush(color string) coloring {
-	pre := "\033["
-	reset := "\033[0m"
-	return func(text string) string {
-		return pre + color + "m" + text + reset
-	}
-}
-
-var colors = []coloring{
-	newBrush("0;31"), // Critical    red
-	newBrush("0;35"), // Error       purple
-	newBrush("0;33"), // Warn        yellow
-	newBrush("0;34"), // Trace       white
-	newBrush("0;34"), // Info        blue
-	newBrush("0;37"), // Debug       white
-}
-
 var mappingLevel = map[uint8]string{
 	Critical: "Critical",
 	Error:    "Error",
 	Warning:  "Warn",
-	Trace:    "Trace",
 	Info:     "Info",
 	Debug:    "Debug",
 }
 
-func (l *logger) logWrite(msgText string, level uint8) {
+func (l *logger) logWrite(msgText string, level uint8) (string, bool) {
 	if level > l.level && !l.isLogger {
-		return
+		return "", false
 	}
 
 	if !l.isLogger {
@@ -99,13 +82,7 @@ func (l *logger) logWrite(msgText string, level uint8) {
 		msgText = fmt.Sprintf("%s [%s] %s %s", Version, mappingLevel[level], time.Now().Format(timeFormat), msgText)
 	}
 
-	if runtime.GOOS != "windows" {
-		msgText = colors[level](msgText)
-	}
-
-	l.print(msgText)
-
-	return
+	return msgText, true
 }
 
 func (l *logger) print(msg string) {
@@ -115,25 +92,32 @@ func (l *logger) print(msg string) {
 }
 
 func (l *logger) Critical(msg string) {
-	l.logWrite(msg, Critical)
+	if msg, ok := l.logWrite(msg, Critical); ok {
+		l.print(l.producer.Red(msg))
+	}
 }
 
 func (l *logger) Error(msg string) {
-	l.logWrite(msg, Error)
+	if msg, ok := l.logWrite(msg, Error); ok {
+		l.print(l.producer.Magenta(msg))
+	}
 }
 
 func (l *logger) Warn(msg string) {
-	l.logWrite(msg, Warning)
+	if msg, ok := l.logWrite(msg, Warning); ok {
+		l.print(l.producer.Yellow(msg))
+	}
 }
 
 func (l *logger) Info(msg string) {
-	l.logWrite(msg, Info)
+	if msg, ok := l.logWrite(msg, Info); ok {
+		l.print(l.producer.Blue(msg))
+	}
+
 }
 
 func (l *logger) Debug(msg string) {
-	l.logWrite(msg, Debug)
-}
-
-func (l *logger) Trace(msg string) {
-	l.logWrite(msg, Trace)
+	if msg, ok := l.logWrite(msg, Debug); ok {
+		l.print(l.producer.Cyan(msg))
+	}
 }

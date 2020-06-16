@@ -9,7 +9,7 @@ import (
 )
 
 func TestRecovery(t *testing.T) {
-	y := yee.InitCore()
+	y := yee.New()
 	y.Use(Recovery())
 	y.GET("/y", func(context yee.Context) error {
 		names := []string{"geektutu"}
