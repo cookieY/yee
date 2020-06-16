@@ -16,7 +16,7 @@ type HandlerFunc struct {
 	IsMiddleware bool
 }
 
-type UserFunc func(Context) error
+type UserFunc func(Context) (err error)
 
 type HandlersChain []HandlerFunc
 
@@ -37,7 +37,6 @@ type Core struct {
 	RedirectTrailingSlash  bool
 	RedirectFixedPath      bool
 	Banner                 bool
-	//color                  print
 }
 
 type HTTPError struct {
@@ -87,7 +86,6 @@ func New() *Core {
 	}
 
 	core.l.producer.Printf(banner, core.l.producer.Green(Version))
-
 	return core
 }
 
@@ -127,10 +125,10 @@ func (c *Core) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	context.writermem.reset(w)
 	context.r = r
 	context.reset()
-
 	c.handleHTTPRequest(context)
-
+	context.ServerError(http.StatusTooManyRequests, "too many requests")
 	c.pool.Put(context)
+
 }
 
 func (c *Core) Run(addr string) {
@@ -161,15 +159,6 @@ func (c *Core) RunH2C(addr string) {
 		Handler: h2c.NewHandler(c, s),
 	}
 	log.Fatal(h1s.ListenAndServe())
-}
-
-// NewHTTPError creates a new HTTPError instance.
-func NewHTTPError(code int, message ...interface{}) *HTTPError {
-	he := &HTTPError{Code: code, Message: http.StatusText(code)}
-	if len(message) > 0 {
-		he.Message = message[0]
-	}
-	return he
 }
 
 func (c *Core) handleHTTPRequest(context *context) {

@@ -69,7 +69,7 @@ func (l *logger) logWrite(msgText string, level uint8) (string, bool) {
 	}
 
 	if !l.isLogger {
-		_, file, lineno, ok := runtime.Caller(1)
+		_, file, lineno, ok := runtime.Caller(3)
 
 		src := ""
 

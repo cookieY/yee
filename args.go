@@ -2,7 +2,6 @@ package yee
 
 import (
 	"errors"
-	"net/http"
 )
 
 const (
@@ -87,18 +86,7 @@ const (
 
 
 var (
-	ErrUnsupportedMediaType        = NewHTTPError(http.StatusUnsupportedMediaType)
-	ErrNotFound                    = NewHTTPError(http.StatusNotFound)
-	ErrUnauthorized                = NewHTTPError(http.StatusUnauthorized)
-	ErrForbidden                   = NewHTTPError(http.StatusForbidden)
-	ErrMethodNotAllowed            = NewHTTPError(http.StatusMethodNotAllowed)
-	ErrStatusRequestEntityTooLarge = NewHTTPError(http.StatusRequestEntityTooLarge)
-	ErrTooManyRequests             = NewHTTPError(http.StatusTooManyRequests)
-	ErrBadRequest                  = NewHTTPError(http.StatusBadRequest)
-	ErrBadGateway                  = NewHTTPError(http.StatusBadGateway)
-	ErrInternalServerError         = NewHTTPError(http.StatusInternalServerError)
-	ErrRequestTimeout              = NewHTTPError(http.StatusRequestTimeout)
-	ErrServiceUnavailable          = NewHTTPError(http.StatusServiceUnavailable)
+	ErrUnsupportedMediaType        = errors.New("http server not support media type")
 	ErrValidatorNotRegistered      = errors.New("validator not registered")
 	ErrRendererNotRegistered       = errors.New("renderer not registered")
 	ErrInvalidRedirectCode         = errors.New("invalid redirect status code")

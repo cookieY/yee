@@ -1,6 +1,8 @@
 package middleware
 
-import "github.com/cookieY/yee"
+import (
+	"github.com/cookieY/yee"
+)
 
 type RequestIDConfig struct {
 	generator func() string
@@ -23,7 +25,6 @@ func RequestIDWithConfig(config RequestIDConfig) yee.HandlerFunc {
 	if config.generator == nil {
 		config.generator = DefaultRequestIDConfig.generator
 	}
-
 	return yee.HandlerFunc{
 		Func: func(context yee.Context) (err error) {
 			req := context.Request()

@@ -19,7 +19,6 @@ func TestRequestID(t *testing.T) {
 	rec := httptest.NewRecorder()
 
 	y.ServeHTTP(rec, req)
-
 	assert.Equal(t, http.StatusOK, rec.Code)
 	assert.NotEqual(t, "", rec.Header().Get(yee.HeaderXRequestID))
 }

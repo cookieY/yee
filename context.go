@@ -116,11 +116,11 @@ func (c *context) Logger() Logger {
 }
 
 func (c *context) ServerCritical(code int, err error) error {
-	c.intercept = true
 	c.writermem.status = code
 	if c.writermem.Written() {
 		return errors.New("Headers were already written")
 	}
+	c.Logger().Error(err.Error())
 	if c.writermem.Status() == code {
 		c.writermem.Header()["Content-Type"] = []string{MIMETextPlainCharsetUTF8}
 		_, err := c.w.Write([]byte(err.Error()))
