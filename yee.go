@@ -51,8 +51,8 @@ type YeeConfig struct {
 
 const Version = "v0.0.1"
 
-const creator =  "Creator: Henry Yee"
-const title =  "-----Easier and Faster-----"
+const creator = "Creator: Henry Yee"
+const title = "-----Easier and Faster-----"
 
 const banner = `
     __  __          
@@ -83,7 +83,7 @@ func New() *Core {
 	core.pool.New = func() interface{} {
 		return core.allocateContext()
 	}
-	core.l.producer.Printf(banner, core.l.producer.Green(Version),core.l.producer.Red(title),core.l.producer.Cyan(creator))
+	//core.l.producer.Printf(banner, core.l.producer.Green(Version),core.l.producer.Red(title),core.l.producer.Cyan(creator))
 	return core
 }
 
@@ -123,6 +123,7 @@ func (c *Core) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	context.writermem.reset(w)
 	context.r = r
 	context.reset()
+	//context.w.Header().Set(HeaderServer, serverName)
 	c.handleHTTPRequest(context)
 	c.pool.Put(context)
 
@@ -162,7 +163,6 @@ func (c *Core) handleHTTPRequest(context *context) {
 	httpMethod := context.r.Method
 	rPath := context.r.URL.Path
 	unescape := false
-
 	// Find root of the tree for the given HTTP method
 	t := c.trees
 	for i, tl := 0, len(t); i < tl; i++ {
@@ -195,7 +195,6 @@ func (c *Core) handleHTTPRequest(context *context) {
 	// Because when complex request (XMLHttpRequest) will send an OPTIONS request and fetch the preflight resource.
 	// But in general, we do not register an OPTIONS handle,
 	// So this may cause some middleware errors.
-
 	if httpMethod == http.MethodOptions {
 		serveError(context, 200, []byte("preflight resource"))
 	} else {

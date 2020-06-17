@@ -82,6 +82,7 @@ const (
 
 const (
 	charsetUTF8 = "charset=UTF-8"
+	serverName = "yee"
 )
 
 

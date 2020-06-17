@@ -98,14 +98,12 @@ func (c *context) reset() { // reset context members
 func (c *context) Next() {
 	c.index++
 	s := len(c.handlers)
-	c.SetHeader(HeaderServer, "yee")
 	for ; c.index < s; c.index++ {
-
 		if c.intercept && !c.handlers[c.index].IsMiddleware {
 			continue
 		} else {
 			if err := c.handlers[c.index].Func(c); err != nil {
-				//fmt.Println(err.Error())
+				c.engine.l.producer.Println(c.engine.l.producer.Red(err.Error()))
 			}
 		}
 
