@@ -59,11 +59,6 @@ func (r *router) Group(prefix string, handlers ...HandlerFunc) *router {
 		core:     r.core,
 		basePath: r.calculateAbsolutePath(prefix),
 	}
-	// when we dose not match prefix or method
-	// we`ll register noRoute or noMethod handle for this
-	// otherwise, we cannot be verified for noRoute/noMethod
-	rx.core.allNoRoute = rx.combineHandlers(r.core.noRoute)
-	rx.core.allNoMethod = rx.combineHandlers(r.core.noMethod)
 	return rx
 }
 

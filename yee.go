@@ -92,6 +92,10 @@ func (c *Core) allocateContext() *context {
 	return &context{engine: c, params: &v, index: -1}
 }
 
+// when we dose not match prefix or method
+// we`ll register noRoute or noMethod handle for this
+// otherwise, we cannot be verified for noRoute/noMethod
+
 func (c *Core) Use(middleware ...HandlerFunc) {
 	c.router.Use(middleware...)
 	c.rebuild404Handlers()
