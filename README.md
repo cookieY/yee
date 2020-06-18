@@ -17,7 +17,7 @@ This is a framework for learning purposes. Refer to the code for Echo and Gin
 
 # Supported Go versions
 
-Yee is available as a Go module. You need to use Go 1.1.3 +
+Yee is available as a Go module. You need to use Go 1.13 +
 
 ## Example
 
