@@ -34,15 +34,10 @@ type Core struct {
 	noMethod               HandlersChain
 	l                      *logger
 	color                  *color.Color
+	bind                   DefaultBinder
 	RedirectTrailingSlash  bool
 	RedirectFixedPath      bool
 	Banner                 bool
-}
-
-type HTTPError struct {
-	Code     int
-	Message  interface{}
-	Internal error // Stores the error returned by an external dependency
 }
 
 type YeeConfig struct {
@@ -76,6 +71,7 @@ func New() *Core {
 		trees:  make(methodTrees, 0, 0),
 		router: router,
 		l:      LogCreator(),
+		bind:   DefaultBinder{},
 	}
 
 	core.core = core
@@ -126,7 +122,16 @@ func (c *Core) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//context.w.Header().Set(HeaderServer, serverName)
 	c.handleHTTPRequest(context)
 	c.pool.Put(context)
+}
 
+// the func is for testing
+func (c *Core) NewContext(r *http.Request, w http.ResponseWriter) Context {
+	context := new(context)
+	context.writermem.reset(w)
+	context.w = &context.writermem
+	context.r = r
+	context.engine = c
+	return context
 }
 
 func (c *Core) Run(addr string) {

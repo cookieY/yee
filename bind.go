@@ -14,10 +14,6 @@ import (
 
 type (
 	// Binder is the interface that wraps the Bind method.
-	Binder interface {
-		Bind(i interface{}, c Context) error
-	}
-
 	// DefaultBinder is the default implementation of the Binder interface.
 	DefaultBinder struct{}
 
@@ -31,11 +27,11 @@ type (
 )
 
 // Bind implements the `Binder#Bind` function.
-func (c *context) Bind(i interface{}) (err error) {
+func (b *DefaultBinder) Bind(i interface{},c Context) (err error) {
 
 	req := c.Request()
 
-	if err = c.bindData(i, c.QueryParams(), "query"); err != nil {
+	if err = b.bindData(i, c.QueryParams(), "query"); err != nil {
 		return c.ServerCritical(http.StatusBadRequest, err)
 	}
 	if req.ContentLength == 0 {
@@ -66,7 +62,7 @@ func (c *context) Bind(i interface{}) (err error) {
 		if err != nil {
 			return c.ServerCritical(http.StatusBadRequest, err)
 		}
-		if err = c.bindData(i, params, "form"); err != nil {
+		if err = b.bindData(i, params, "form"); err != nil {
 			return c.ServerCritical(http.StatusBadRequest, err)
 		}
 	default:
@@ -75,7 +71,7 @@ func (c *context) Bind(i interface{}) (err error) {
 	return
 }
 
-func (c *context) bindData(ptr interface{}, data map[string][]string, tag string) error {
+func (b *DefaultBinder) bindData(ptr interface{}, data map[string][]string, tag string) error {
 	if ptr == nil || len(data) == 0 {
 		return nil
 	}
@@ -108,7 +104,7 @@ func (c *context) bindData(ptr interface{}, data map[string][]string, tag string
 			inputFieldName = typeField.Name
 			// If tag is nil, we inspect if the field is a struct.
 			if _, ok := structField.Addr().Interface().(BindUnmarshaler); !ok && structFieldKind == reflect.Struct {
-				if err := c.bindData(structField.Addr().Interface(), data, tag); err != nil {
+				if err := b.bindData(structField.Addr().Interface(), data, tag); err != nil {
 					return err
 				}
 				continue

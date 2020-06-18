@@ -71,13 +71,16 @@ type context struct {
 	lock      sync.RWMutex
 	noRewrite bool
 	intercept bool
-
-	Accepted []string
+	Accepted  []string
 }
 
 func (c *context) Reset() {
 	c.index = -1
 	c.handlers = c.engine.noRoute
+}
+
+func (c *context) Bind(i interface{}) error {
+	return c.engine.bind.Bind(i, c)
 }
 
 func (c *context) reset() { // reset context members
@@ -115,11 +118,11 @@ func (c *context) Logger() Logger {
 }
 
 func (c *context) ServerCritical(code int, err error) error {
+	c.intercept = true
 	c.writermem.status = code
 	if c.writermem.Written() {
 		return errors.New("Headers were already written")
 	}
-	c.Logger().Error(err.Error())
 	if c.writermem.Status() == code {
 		c.writermem.Header()["Content-Type"] = []string{MIMETextPlainCharsetUTF8}
 		_, err := c.w.Write([]byte(err.Error()))
@@ -128,8 +131,8 @@ func (c *context) ServerCritical(code int, err error) error {
 		}
 		return nil
 	}
-	c.writermem.WriteHeaderNow()
-	return err
+	//c.writermem.WriteHeaderNow()
+	return  nil
 }
 
 func (c *context) ServerError(code int, defaultMessage string) {

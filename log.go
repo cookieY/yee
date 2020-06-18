@@ -113,7 +113,6 @@ func (l *logger) Info(msg string) {
 	if msg, ok := l.logWrite(msg, Info); ok {
 		l.print(l.producer.Blue(msg))
 	}
-
 }
 
 func (l *logger) Debug(msg string) {
