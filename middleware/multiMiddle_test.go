@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"github.com/cookieY/yee"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -45,16 +44,12 @@ func TestMultiGroup(t *testing.T) {
 }
 
 func CustomerMiddleware() yee.HandlerFunc {
-	return yee.HandlerFunc{
-		Func: func(c yee.Context) (err error) {
-			if c.QueryParam("test") == "y" {
-				fmt.Println("231")
-				c.Next()
-				return
-			}
-			c.ServerError(http.StatusForbidden, "非法越权操作！")
+	return func(c yee.Context) (err error) {
+		if c.QueryParam("test") == "y" {
+			c.Next()
 			return
-		},
-		IsMiddleware: true,
+		}
+
+		return c.ServerError(http.StatusForbidden, "非法越权操作！")
 	}
 }

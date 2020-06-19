@@ -37,17 +37,14 @@ func RateLimitWithConfig(config RateLimitConfig) yee.HandlerFunc {
 
 	go timer(&config)
 
-	return yee.HandlerFunc{
-		Func: func(context yee.Context) (err error) {
-			if config.numbers >= config.Rate {
-				context.ServerError(http.StatusTooManyRequests, "too many requests")
-			}
-			config.lock.Lock()
-			config.numbers++
-			defer config.lock.Unlock()
-			return
-		},
-		IsMiddleware: true,
+	return func(context yee.Context) (err error) {
+		if config.numbers >= config.Rate {
+			return context.ServerError(http.StatusTooManyRequests, "too many requests")
+		}
+		config.lock.Lock()
+		config.numbers++
+		defer config.lock.Unlock()
+		return
 	}
 }
 

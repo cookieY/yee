@@ -47,46 +47,43 @@ func LoggerWithConfig(config LoggerConfig) yee.HandlerFunc {
 
 	logger.IsLogger(config.IsLogger)
 
-	return yee.HandlerFunc{
-		Func: func(context yee.Context) (err error) {
-			context.Next()
-			s := t.ExecuteFuncString(func(w io.Writer, tag string) (int, error) {
-				switch tag {
-				case "url":
-					p := context.Request().URL.Path
-					if p == "" {
-						p = "/"
-					}
-					return w.Write([]byte(p))
-				case "method":
-					return w.Write([]byte(context.Request().Method))
-				case "status":
-					return w.Write([]byte(fmt.Sprintf("%d", context.Response().Status())))
-				case "remote_ip":
-					return w.Write([]byte(context.RemoteIp()))
-				case "host":
-					return w.Write([]byte(context.Request().Host))
-				case "protocol":
-					return w.Write([]byte(context.Request().Proto))
-				case "bytes_in":
-					cl := context.Request().Header.Get(yee.HeaderContentLength)
-					if cl == "" {
-						cl = "0"
-					}
-					return w.Write([]byte(cl))
-				case "bytes_out":
-					return w.Write([]byte(fmt.Sprintf("%d", context.Response().Size())))
-				default:
-					return w.Write([]byte(""))
+	return func(context yee.Context) (err error) {
+		context.Next()
+		s := t.ExecuteFuncString(func(w io.Writer, tag string) (int, error) {
+			switch tag {
+			case "url":
+				p := context.Request().URL.Path
+				if p == "" {
+					p = "/"
 				}
-			})
-			if context.Response().Status() < 400 {
-				logger.Info(s)
-			} else {
-				logger.Warn(s)
+				return w.Write([]byte(p))
+			case "method":
+				return w.Write([]byte(context.Request().Method))
+			case "status":
+				return w.Write([]byte(fmt.Sprintf("%d", context.Response().Status())))
+			case "remote_ip":
+				return w.Write([]byte(context.RemoteIp()))
+			case "host":
+				return w.Write([]byte(context.Request().Host))
+			case "protocol":
+				return w.Write([]byte(context.Request().Proto))
+			case "bytes_in":
+				cl := context.Request().Header.Get(yee.HeaderContentLength)
+				if cl == "" {
+					cl = "0"
+				}
+				return w.Write([]byte(cl))
+			case "bytes_out":
+				return w.Write([]byte(fmt.Sprintf("%d", context.Response().Size())))
+			default:
+				return w.Write([]byte(""))
 			}
-			return
-		},
-		IsMiddleware: true,
+		})
+		if context.Response().Status() < 400 {
+			logger.Info(s)
+		} else {
+			logger.Warn(s)
+		}
+		return
 	}
 }

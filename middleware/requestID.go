@@ -25,15 +25,12 @@ func RequestIDWithConfig(config RequestIDConfig) yee.HandlerFunc {
 	if config.generator == nil {
 		config.generator = DefaultRequestIDConfig.generator
 	}
-	return yee.HandlerFunc{
-		Func: func(context yee.Context) (err error) {
-			req := context.Request()
-			res := context.Response()
-			if req.Header.Get(yee.HeaderXRequestID) == "" {
-				res.Header().Set(yee.HeaderXRequestID, config.generator())
-			}
-			return
-		},
-		IsMiddleware: true,
+	return func(context yee.Context) (err error) {
+		req := context.Request()
+		res := context.Response()
+		if req.Header.Get(yee.HeaderXRequestID) == "" {
+			res.Header().Set(yee.HeaderXRequestID, config.generator())
+		}
+		return
 	}
 }

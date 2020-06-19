@@ -31,20 +31,15 @@ func BasicAuthWithConfig(config BasicAuthConfig) yee.HandlerFunc {
 		panic("yee: basic-auth middleware requires a validator function")
 	}
 
-	return yee.HandlerFunc{
-		Func: func(context yee.Context) (err error) {
-			_, decode := parserVerifyData(context)
-			if err, verify := config.Validator(decode); err == nil && verify {
-				return err
-			}
+	return func(context yee.Context) (err error) {
+		_, decode := parserVerifyData(context)
+		if err, verify := config.Validator(decode); err == nil && verify {
+			return err
+		}
 
-			context.Response().Header().Set(yee.HeaderWWWAuthenticate, basic+" realm="+config.Realm)
+		context.Response().Header().Set(yee.HeaderWWWAuthenticate, basic+" realm="+config.Realm)
 
-			context.ServerError(http.StatusUnauthorized, "invalid basic auth token")
-
-			return
-		},
-		IsMiddleware: true,
+		return context.ServerError(http.StatusUnauthorized, "invalid basic auth token")
 	}
 }
 

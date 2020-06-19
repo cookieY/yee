@@ -68,57 +68,52 @@ func CSRFWithConfig(config CSRFConfig) yee.HandlerFunc {
 		creator = csrfTokenFromForm(proc[1])
 	}
 
-	return yee.HandlerFunc{
-		Func: func(context yee.Context) (err error) {
+	return func(context yee.Context) (err error) {
 
-			// we fetch cookie from this request
-			// if cookie haven`t token info
-			// we need generate the token and create a new cookie
-			// otherwise reuse token
+		// we fetch cookie from this request
+		// if cookie haven`t token info
+		// we need generate the token and create a new cookie
+		// otherwise reuse token
 
-			k, err := context.Cookie(config.CookieName)
-			token := ""
-			if err != nil {
-				token = yee.RandomString(config.TokenLength)
-			} else {
-				token = k.Value
+		k, err := context.Cookie(config.CookieName)
+		token := ""
+		if err != nil {
+			token = yee.RandomString(config.TokenLength)
+		} else {
+			token = k.Value
+		}
+
+		switch context.Request().Method {
+		case http.MethodGet, http.MethodTrace, http.MethodOptions, http.MethodHead:
+		default:
+			clientToken, e := creator(context)
+
+			if e != nil {
+				return context.ServerError(http.StatusBadRequest, e.Error())
 			}
-
-			switch context.Request().Method {
-			case http.MethodGet, http.MethodTrace, http.MethodOptions, http.MethodHead:
-			default:
-				clientToken, e := creator(context)
-
-				if e != nil {
-					context.ServerError(http.StatusBadRequest, e.Error())
-					return
-				}
-				if !validateCSRFToken(token, clientToken) {
-					context.ServerError(http.StatusForbidden, "invalid csrf token")
-					return
-				}
+			if !validateCSRFToken(token, clientToken) {
+				return context.ServerError(http.StatusForbidden, "invalid csrf token")
 			}
+		}
 
-			nCookie := new(http.Cookie)
-			nCookie.Name = config.CookieName
-			nCookie.Value = token
-			if config.CookiePath != "" {
-				nCookie.Path = config.CookiePath
-			}
-			if config.CookieDomain != "" {
-				nCookie.Domain = config.CookieDomain
-			}
-			nCookie.Expires = time.Now().Add(time.Duration(config.CookieMaxAge) * time.Second)
-			nCookie.Secure = config.CookieSecure
-			nCookie.HttpOnly = config.CookieHttpOnly
-			context.SetCookie(nCookie)
+		nCookie := new(http.Cookie)
+		nCookie.Name = config.CookieName
+		nCookie.Value = token
+		if config.CookiePath != "" {
+			nCookie.Path = config.CookiePath
+		}
+		if config.CookieDomain != "" {
+			nCookie.Domain = config.CookieDomain
+		}
+		nCookie.Expires = time.Now().Add(time.Duration(config.CookieMaxAge) * time.Second)
+		nCookie.Secure = config.CookieSecure
+		nCookie.HttpOnly = config.CookieHttpOnly
+		context.SetCookie(nCookie)
 
-			context.Put(config.Key, token)
-			context.SetHeader(yee.HeaderVary, yee.HeaderCookie)
-			context.Next()
-			return
-		},
-		IsMiddleware: true,
+		context.Put(config.Key, token)
+		context.SetHeader(yee.HeaderVary, yee.HeaderCookie)
+		context.Next()
+		return
 	}
 }
 

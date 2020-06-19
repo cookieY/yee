@@ -31,34 +31,31 @@ func GzipWithConfig(config GzipConfig) yee.HandlerFunc {
 		config.Level = DefaultGzipConfig.Level
 	}
 
-	return yee.HandlerFunc{
-		Func: func(c yee.Context) (err error) {
-			res := c.Response()
-			res.Header().Add(yee.HeaderVary, yee.HeaderAcceptEncoding)
-			if strings.Contains(c.Request().Header.Get(yee.HeaderAcceptEncoding), "gzip") {
-				res.Header().Set(yee.HeaderContentEncoding, "gzip")
-				rw := res.Writer()
-				w, err := gzip.NewWriterLevel(rw, config.Level)
-				if err != nil {
-					return err
-				}
-				defer func() {
-					if res.Size() < 1 {
-						if res.Header().Get(yee.HeaderContentEncoding) == "gzip" {
-							res.Header().Del(yee.HeaderContentEncoding)
-						}
-						res.Override(rw)
-						w.Reset(ioutil.Discard)
-					}
-					_ = w.Close()
-				}()
-				grw := &gzipResponseWriter{Writer: w, ResponseWriter: rw}
-				res.Override(grw)
+	return func(c yee.Context) (err error) {
+		res := c.Response()
+		res.Header().Add(yee.HeaderVary, yee.HeaderAcceptEncoding)
+		if strings.Contains(c.Request().Header.Get(yee.HeaderAcceptEncoding), "gzip") {
+			res.Header().Set(yee.HeaderContentEncoding, "gzip")
+			rw := res.Writer()
+			w, err := gzip.NewWriterLevel(rw, config.Level)
+			if err != nil {
+				return err
 			}
-			c.Next()
-			return
-		},
-		IsMiddleware: true,
+			defer func() {
+				if res.Size() < 1 {
+					if res.Header().Get(yee.HeaderContentEncoding) == "gzip" {
+						res.Header().Del(yee.HeaderContentEncoding)
+					}
+					res.Override(rw)
+					w.Reset(ioutil.Discard)
+				}
+				_ = w.Close()
+			}()
+			grw := &gzipResponseWriter{Writer: w, ResponseWriter: rw}
+			res.Override(grw)
+		}
+		c.Next()
+		return
 	}
 }
 

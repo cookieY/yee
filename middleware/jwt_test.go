@@ -16,12 +16,28 @@ func GenJwtToken() (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["name"] = "henry"
-	claims["exp"] = time.Now().Add(time.Second * 5).Unix()
+	claims["exp"] = time.Now().Add(time.Minute * 15).Unix()
 	t, err := token.SignedString([]byte("dbcjqheupqjsuwsm"))
 	if err != nil {
 		return "", errors.New("JWT Generate Failure")
 	}
 	return t, nil
+}
+
+func JwtParse(c yee.Context) (string, string) {
+	user := c.Get("auth").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	return claims["name"].(string),claims["name"].(string)
+}
+
+func SuperManageGroup() yee.HandlerFunc {
+	return func(c yee.Context) (err error) {
+		user, _ := JwtParse(c)
+		if user == "henry" {
+			return
+		}
+		return c.JSON(http.StatusForbidden, "非法越权操作！")
+	}
 }
 
 func TestJwt(t *testing.T) {
@@ -57,4 +73,19 @@ func TestJwt(t *testing.T) {
 			assert2.Equal(i.Expected, rec.Code)
 		})
 	}
+}
+
+func TestJwtExpire(t *testing.T) {
+	y := yee.New()
+	y.Use(Cors(), Secure())
+	y.GET("/", func(context yee.Context) error {
+		return context.String(http.StatusOK, "is_ok")
+	})
+	r := y.Group("/api", JWTWithConfig(JwtConfig{SigningKey: []byte("dbcjqheupqjsuwsm")}))
+	k := r.Group("/k", SuperManageGroup())
+	k.GET("/o", func(context yee.Context) (err error) {
+		return context.JSON(http.StatusOK, "pk")
+	})
+	y.Run(":9999")
+
 }

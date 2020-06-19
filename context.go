@@ -46,11 +46,10 @@ type Context interface {
 	Cookies() []*http.Cookie
 	Get(key string) interface{}
 	Put(key string, values interface{})
-	ServerError(code int, defaultMessage string)
+	ServerError(code int, defaultMessage string) error
 	RemoteIp() string
 	Logger() Logger
 	Reset()
-	ServerCritical(code int, err error) error
 }
 
 type context struct {
@@ -70,8 +69,6 @@ type context struct {
 	store     map[string]interface{}
 	lock      sync.RWMutex
 	noRewrite bool
-	intercept bool
-	Accepted  []string
 }
 
 func (c *context) Reset() {
@@ -89,8 +86,6 @@ func (c *context) reset() { // reset context members
 	c.handlers = nil
 	c.index = -1
 	c.path = ""
-	c.Accepted = nil
-	c.intercept = false
 	// when context reset clear queryList cache .
 	// cause if not clear cache the queryParams results will mistake
 	c.queryList = nil
@@ -102,14 +97,13 @@ func (c *context) Next() {
 	c.index++
 	s := len(c.handlers)
 	for ; c.index < s; c.index++ {
-		if c.intercept && !c.handlers[c.index].IsMiddleware {
-			continue
-		} else {
-			if err := c.handlers[c.index].Func(c); err != nil {
-				c.engine.l.producer.Println(c.engine.l.producer.Red(err.Error()))
-			}
+		//if c.intercept && !c.handlers[c.index].IsMiddleware {
+		//	continue
+		//} else {
+		if err := c.handlers[c.index](c); err != nil {
+			c.engine.l.producer.Println(c.engine.l.producer.Red(err.Error()))
 		}
-
+		//}
 	}
 }
 
@@ -117,40 +111,21 @@ func (c *context) Logger() Logger {
 	return c.engine.l
 }
 
-func (c *context) ServerCritical(code int, err error) error {
-	c.intercept = true
+func (c *context) ServerError(code int, defaultMessage string) error {
 	c.writermem.status = code
 	if c.writermem.Written() {
-		return errors.New("Headers were already written")
-	}
-	if c.writermem.Status() == code {
-		c.writermem.Header()["Content-Type"] = []string{MIMETextPlainCharsetUTF8}
-		_, err := c.w.Write([]byte(err.Error()))
-		if err != nil {
-			return errors.New(fmt.Sprintf("cannot write message to writer during serve error: %v", err))
-		}
-		return nil
-	}
-	//c.writermem.WriteHeaderNow()
-	return  nil
-}
-
-func (c *context) ServerError(code int, defaultMessage string) {
-	c.intercept = true
-	c.writermem.status = code
-	if c.writermem.Written() {
-		return
+		return errors.New("headers were already written")
 	}
 	if c.writermem.Status() == code {
 		c.writermem.Header()["Content-Type"] = []string{MIMETextPlainCharsetUTF8}
 		_, err := c.w.Write([]byte(defaultMessage))
 		if err != nil {
-			//fmt.Println(err.Error())
-			//debugPrint("cannot write message to writer during serve error: %v", err)
+			return errors.New(fmt.Sprintf("cannot write message to writer during serve error: %v", err))
 		}
-		return
+		return nil
 	}
 	c.writermem.WriteHeaderNow()
+	return nil
 }
 
 func (c *context) Put(key string, values interface{}) {
@@ -164,8 +139,9 @@ func (c *context) Put(key string, values interface{}) {
 
 func (c *context) Get(key string) interface{} {
 	c.lock.RLock()
+	store:= c.store[key]
 	defer c.lock.RUnlock()
-	return c.store[key]
+	return store
 }
 
 func (c *context) Request() *http.Request {
@@ -204,20 +180,24 @@ func (c *context) HTMLBlob(code int, b []byte) (err error) {
 }
 
 func (c *context) Blob(code int, contentType string, b []byte) (err error) {
-	c.writeContentType(contentType)
-	c.w.WriteHeader(code)
-	_, err = c.w.Write(b)
-	if err != nil {
-		fmt.Println(err)
+	if !c.writermem.Written() {
+		c.writeContentType(contentType)
+		c.w.WriteHeader(code)
+		if _, err = c.w.Write(b); err != nil {
+			c.Logger().Error(err.Error())
+		}
 	}
 	return
 }
 
-func (c *context) JSON(code int, i interface{}) error {
-	enc := json.NewEncoder(c.w)
-	c.writeContentType(MIMEApplicationJSONCharsetUTF8)
-	c.w.WriteHeader(code)
-	return enc.Encode(i)
+func (c *context) JSON(code int, i interface{}) (err error) {
+	if !c.writermem.Written() {
+		enc := json.NewEncoder(c.w)
+		c.writeContentType(MIMEApplicationJSONCharsetUTF8)
+		c.w.WriteHeader(code)
+		return enc.Encode(i)
+	}
+	return
 }
 
 func (c *context) String(code int, s string) error {

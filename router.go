@@ -17,36 +17,36 @@ type router struct {
 // GET,POST,PUT,DELETE,OPTIONS,TRACE,HEAD,PATCH
 // these are defined in RFC 7231 section 4.3.
 
-func (r *router) GET(path string, handler UserFunc) {
-	r.handle(http.MethodGet, path, []HandlerFunc{{Func: handler}})
+func (r *router) GET(path string, handler ...HandlerFunc) {
+	r.handle(http.MethodGet, path, handler)
 }
 
-func (r *router) POST(path string, handler UserFunc) {
-	r.handle(http.MethodPost, path, []HandlerFunc{{Func: handler}})
+func (r *router) POST(path string, handler ...HandlerFunc) {
+	r.handle(http.MethodPost, path, handler)
 }
 
-func (r *router) PUT(path string, handler UserFunc) {
-	r.handle(http.MethodPut, path, []HandlerFunc{{Func: handler}})
+func (r *router) PUT(path string, handler ...HandlerFunc) {
+	r.handle(http.MethodPut, path, handler)
 }
 
-func (r *router) DELETE(path string, handler UserFunc) {
-	r.handle(http.MethodDelete, path, []HandlerFunc{{Func: handler}})
+func (r *router) DELETE(path string, handler ...HandlerFunc) {
+	r.handle(http.MethodDelete, path, handler)
 }
 
-func (r *router) PATCH(path string, handler UserFunc) {
-	r.handle(http.MethodPatch, path, []HandlerFunc{{Func: handler}})
+func (r *router) PATCH(path string, handler ...HandlerFunc) {
+	r.handle(http.MethodPatch, path, handler)
 }
 
-func (r *router) HEAD(path string, handler UserFunc) {
-	r.handle(http.MethodHead, path, []HandlerFunc{{Func: handler}})
+func (r *router) HEAD(path string, handler ...HandlerFunc) {
+	r.handle(http.MethodHead, path, handler)
 }
 
-func (r *router) TRACE(path string, handler UserFunc) {
-	r.handle(http.MethodTrace, path, []HandlerFunc{{Func: handler}})
+func (r *router) TRACE(path string, handler ...HandlerFunc) {
+	r.handle(http.MethodTrace, path, handler)
 }
 
-func (r *router) OPTIONS(path string, handler UserFunc) {
-	r.handle(http.MethodOptions, path, []HandlerFunc{{Func: handler}})
+func (r *router) OPTIONS(path string, handler ...HandlerFunc) {
+	r.handle(http.MethodOptions, path, handler)
 }
 
 func (r *router) Use(middleware ...HandlerFunc) {
@@ -103,7 +103,7 @@ func (r *router) Static(relativePath, root string) {
 
 }
 
-func (r *router) createDistHandler(relativePath string, fs http.FileSystem) UserFunc {
+func (r *router) createDistHandler(relativePath string, fs http.FileSystem) HandlerFunc {
 	absolutePath := r.calculateAbsolutePath(relativePath)
 	fileServer := http.StripPrefix(absolutePath, http.FileServer(fs))
 	return func(c Context) (err error) {

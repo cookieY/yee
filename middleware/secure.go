@@ -39,48 +39,45 @@ func Secure() yee.HandlerFunc {
 }
 
 func SecureWithConfig(config SecureConfig) yee.HandlerFunc {
-	return yee.HandlerFunc{
-		Func: func(c yee.Context) (err error) {
+	return func(c yee.Context) (err error) {
 
-			if config.XSSProtection != "" {
-				c.SetHeader(yee.HeaderXXSSProtection, config.XSSProtection)
-			}
+		if config.XSSProtection != "" {
+			c.SetHeader(yee.HeaderXXSSProtection, config.XSSProtection)
+		}
 
-			if config.ContentTypeNosniff != "" {
-				c.SetHeader(yee.HeaderXContentTypeOptions, config.ContentTypeNosniff)
-			}
+		if config.ContentTypeNosniff != "" {
+			c.SetHeader(yee.HeaderXContentTypeOptions, config.ContentTypeNosniff)
+		}
 
-			if config.XFrameOptions != "" {
-				c.SetHeader(yee.HeaderXFrameOptions, config.XFrameOptions)
-			}
+		if config.XFrameOptions != "" {
+			c.SetHeader(yee.HeaderXFrameOptions, config.XFrameOptions)
+		}
 
-			if (c.IsTls() || (c.GetHeader(yee.HeaderXForwardedProto) == "https")) && config.HSTSMaxAge != 0 {
-				subdomains := ""
-				if !config.HSTSExcludeSubdomains {
-					subdomains = "; includeSubdomains"
-				}
-				if config.HSTSPreloadEnabled {
-					subdomains = fmt.Sprintf("%s; preload", subdomains)
-				}
-				c.SetHeader(yee.HeaderStrictTransportSecurity, fmt.Sprintf("max-age=%d%s", config.HSTSMaxAge, subdomains))
+		if (c.IsTls() || (c.GetHeader(yee.HeaderXForwardedProto) == "https")) && config.HSTSMaxAge != 0 {
+			subdomains := ""
+			if !config.HSTSExcludeSubdomains {
+				subdomains = "; includeSubdomains"
 			}
-			// CSP
-			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy-Report-Only
-			// https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_Security_Policy
-			if config.ContentSecurityPolicy != "" {
-				if config.CSPReportOnly {
-					c.SetHeader(yee.HeaderContentSecurityPolicyReportOnly, config.ContentSecurityPolicy)
-				} else {
-					c.SetHeader(yee.HeaderContentSecurityPolicy, config.ContentSecurityPolicy)
-				}
+			if config.HSTSPreloadEnabled {
+				subdomains = fmt.Sprintf("%s; preload", subdomains)
 			}
+			c.SetHeader(yee.HeaderStrictTransportSecurity, fmt.Sprintf("max-age=%d%s", config.HSTSMaxAge, subdomains))
+		}
+		// CSP
+		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy-Report-Only
+		// https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_Security_Policy
+		if config.ContentSecurityPolicy != "" {
+			if config.CSPReportOnly {
+				c.SetHeader(yee.HeaderContentSecurityPolicyReportOnly, config.ContentSecurityPolicy)
+			} else {
+				c.SetHeader(yee.HeaderContentSecurityPolicy, config.ContentSecurityPolicy)
+			}
+		}
 
-			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
-			if config.ReferrerPolicy != "" {
-				c.SetHeader(yee.HeaderReferrerPolicy, config.ReferrerPolicy)
-			}
-			return
-		},
-		IsMiddleware: true,
+		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
+		if config.ReferrerPolicy != "" {
+			c.SetHeader(yee.HeaderReferrerPolicy, config.ReferrerPolicy)
+		}
+		return
 	}
 }

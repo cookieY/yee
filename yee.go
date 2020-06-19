@@ -11,12 +11,7 @@ import (
 	"sync"
 )
 
-type HandlerFunc struct {
-	Func         UserFunc
-	IsMiddleware bool
-}
-
-type UserFunc func(Context) (err error)
+type HandlerFunc func(Context) (err error)
 
 type HandlersChain []HandlerFunc
 

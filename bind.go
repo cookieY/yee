@@ -27,12 +27,12 @@ type (
 )
 
 // Bind implements the `Binder#Bind` function.
-func (b *DefaultBinder) Bind(i interface{},c Context) (err error) {
+func (b *DefaultBinder) Bind(i interface{}, c Context) (err error) {
 
 	req := c.Request()
 
 	if err = b.bindData(i, c.QueryParams(), "query"); err != nil {
-		return c.ServerCritical(http.StatusBadRequest, err)
+		return c.ServerError(http.StatusBadRequest, err.Error())
 	}
 	if req.ContentLength == 0 {
 		return
@@ -42,31 +42,31 @@ func (b *DefaultBinder) Bind(i interface{},c Context) (err error) {
 	case strings.HasPrefix(ctype, MIMEApplicationJSON):
 		if err = json.NewDecoder(req.Body).Decode(i); err != nil {
 			if ute, ok := err.(*json.UnmarshalTypeError); ok {
-				return c.ServerCritical(http.StatusBadRequest, errors.New(fmt.Sprintf("Unmarshal type error: expected=%v, got=%v, field=%v, offset=%v", ute.Type, ute.Value, ute.Field, ute.Offset)))
+				return c.ServerError(http.StatusBadRequest, fmt.Sprintf("Unmarshal type error: expected=%v, got=%v, field=%v, offset=%v", ute.Type, ute.Value, ute.Field, ute.Offset))
 			} else if se, ok := err.(*json.SyntaxError); ok {
-				return c.ServerCritical(http.StatusBadRequest, errors.New(fmt.Sprintf("Syntax error: offset=%v, error=%v", se.Offset, se.Error())))
+				return c.ServerError(http.StatusBadRequest, fmt.Sprintf("Syntax error: offset=%v, error=%v", se.Offset, se.Error()))
 			}
-			return c.ServerCritical(http.StatusBadRequest, err)
+			return c.ServerError(http.StatusBadRequest, err.Error())
 		}
 	case strings.HasPrefix(ctype, MIMEApplicationXML), strings.HasPrefix(ctype, MIMETextXML):
 		if err = xml.NewDecoder(req.Body).Decode(i); err != nil {
 			if ute, ok := err.(*xml.UnsupportedTypeError); ok {
-				return c.ServerCritical(http.StatusBadRequest, errors.New(fmt.Sprintf("Unsupported type error: type=%v, error=%v", ute.Type, ute.Error())))
+				return c.ServerError(http.StatusBadRequest, fmt.Sprintf("Unsupported type error: type=%v, error=%v", ute.Type, ute.Error()))
 			} else if se, ok := err.(*xml.SyntaxError); ok {
-				return c.ServerCritical(http.StatusBadRequest, errors.New(fmt.Sprintf("Syntax error: line=%v, error=%v", se.Line, se.Error())))
+				return c.ServerError(http.StatusBadRequest, fmt.Sprintf("Syntax error: line=%v, error=%v", se.Line, se.Error()))
 			}
-			return c.ServerCritical(http.StatusBadRequest, err)
+			return c.ServerError(http.StatusBadRequest, err.Error())
 		}
 	case strings.HasPrefix(ctype, MIMEApplicationForm), strings.HasPrefix(ctype, MIMEMultipartForm):
 		params, err := c.FormParams()
 		if err != nil {
-			return c.ServerCritical(http.StatusBadRequest, err)
+			return c.ServerError(http.StatusBadRequest, err.Error())
 		}
 		if err = b.bindData(i, params, "form"); err != nil {
-			return c.ServerCritical(http.StatusBadRequest, err)
+			return c.ServerError(http.StatusBadRequest, err.Error())
 		}
 	default:
-		return c.ServerCritical(http.StatusUnsupportedMediaType, ErrUnsupportedMediaType)
+		return c.ServerError(http.StatusUnsupportedMediaType, ErrUnsupportedMediaType.Error())
 	}
 	return
 }

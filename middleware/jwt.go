@@ -11,19 +11,23 @@ import (
 )
 
 type JwtConfig struct {
-	GetKey        string
-	AuthScheme    string
-	SigningKey    interface{}
-	SigningMethod string
-	TokenLookup   string
-	Claims        jwt.Claims
-	keyFunc       jwt.Keyfunc
-	ErrorHandler  JWTErrorHandler
+	GetKey         string
+	AuthScheme     string
+	SigningKey     interface{}
+	SigningMethod  string
+	TokenLookup    string
+	Claims         jwt.Claims
+	keyFunc        jwt.Keyfunc
+	ErrorHandler   JWTErrorHandler
+	SuccessHandler JWTSuccessHandler
 }
 
 type jwtExtractor func(yee.Context) (string, error)
 
 type JWTErrorHandler func(error) error
+
+// JWTSuccessHandler defines a function which is executed for a valid token.
+type JWTSuccessHandler func(yee.Context)
 
 const (
 	AlgorithmHS256 = "HS256"
@@ -68,36 +72,31 @@ func JWTWithConfig(config JwtConfig) yee.HandlerFunc {
 
 	parts := strings.Split(config.TokenLookup, ":")
 	extractor := jwtFromHeader(parts[1], config.AuthScheme)
-	return yee.HandlerFunc{
-		Func: func(c yee.Context) (err error) {
-			auth, err := extractor(c)
+
+	return func(c yee.Context) (err error) {
+		auth, err := extractor(c)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, err.Error())
+		}
+		token := new(jwt.Token)
+		if _, ok := config.Claims.(jwt.MapClaims); ok {
+			token, err = jwt.Parse(auth, config.keyFunc)
 			if err != nil {
-				c.ServerError(http.StatusBadRequest, err.Error())
-				return err
+				return c.JSON(http.StatusUnauthorized, err.Error())
 			}
-			token := new(jwt.Token)
-			if _, ok := config.Claims.(jwt.MapClaims); ok {
-				token, err = jwt.Parse(auth, config.keyFunc)
-				if err != nil {
-					c.ServerError(http.StatusUnauthorized, err.Error())
-					return err
-				}
-			} else {
-				t := reflect.ValueOf(config.Claims).Type().Elem()
-				claims := reflect.New(t).Interface().(jwt.Claims)
-				token, err = jwt.ParseWithClaims(auth, claims, config.keyFunc)
-			}
-			if err == nil && token.Valid {
-				c.Put(config.GetKey, token)
-				return
-			}
-			// bug fix
-			// if  invalid or expired jwt,
-			// we must intercept all handlers and return serverError
-			c.ServerError(http.StatusUnauthorized, "invalid or expired jwt")
+		} else {
+			t := reflect.ValueOf(config.Claims).Type().Elem()
+			claims := reflect.New(t).Interface().(jwt.Claims)
+			token, err = jwt.ParseWithClaims(auth, claims, config.keyFunc)
+		}
+		if err == nil && token.Valid {
+			c.Put(config.GetKey, token)
 			return
-		},
-		IsMiddleware: true,
+		}
+		// bug fix
+		// if  invalid or expired jwt,
+		// we must intercept all handlers and return serverError
+		return c.JSON(http.StatusUnauthorized, "invalid or expired jwt")
 	}
 }
 
