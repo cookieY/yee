@@ -2,13 +2,14 @@ package yee
 
 import (
 	"fmt"
-	"github.com/cookieY/yee/color"
-	"golang.org/x/net/http2"
-	"golang.org/x/net/http2/h2c"
 	"log"
 	"net/http"
 	"os"
 	"sync"
+
+	"github.com/cookieY/yee/color"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 )
 
 type HandlerFunc func(Context) (err error)
@@ -74,7 +75,7 @@ func New() *Core {
 	core.pool.New = func() interface{} {
 		return core.allocateContext()
 	}
-	//core.l.producer.Printf(banner, core.l.producer.Green(Version),core.l.producer.Red(title),core.l.producer.Cyan(creator))
+	core.l.producer.Printf(banner, core.l.producer.Green(Version), core.l.producer.Red(title), core.l.producer.Cyan(creator))
 	return core
 }
 
