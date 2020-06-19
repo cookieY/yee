@@ -40,7 +40,7 @@ type YeeConfig struct {
 	Banner bool
 }
 
-const Version = "v0.0.1"
+const Version = "v0.1.1"
 
 const creator = "Creator: Henry Yee"
 const title = "-----Easier and Faster-----"
