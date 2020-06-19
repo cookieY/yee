@@ -97,13 +97,12 @@ func (c *context) Next() {
 	c.index++
 	s := len(c.handlers)
 	for ; c.index < s; c.index++ {
-		//if c.intercept && !c.handlers[c.index].IsMiddleware {
-		//	continue
-		//} else {
 		if err := c.handlers[c.index](c); err != nil {
 			c.engine.l.producer.Println(c.engine.l.producer.Red(err.Error()))
 		}
-		//}
+		if c.w.Written() {
+			break
+		}
 	}
 }
 
@@ -139,9 +138,8 @@ func (c *context) Put(key string, values interface{}) {
 
 func (c *context) Get(key string) interface{} {
 	c.lock.RLock()
-	store:= c.store[key]
 	defer c.lock.RUnlock()
-	return store
+	return c.store[key]
 }
 
 func (c *context) Request() *http.Request {
