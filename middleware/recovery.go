@@ -2,12 +2,16 @@ package middleware
 
 import (
 	"fmt"
-	"github.com/cookieY/yee"
 	"net/http"
 	"runtime"
 	"strings"
+
+	"github.com/cookieY/yee"
 )
 
+// Recovery is a recovery middleware
+// when the program was panic
+// it can recovery program and print stack info
 func Recovery() yee.HandlerFunc {
 	return func(c yee.Context) (err error) {
 		defer func() {
@@ -27,9 +31,10 @@ func Recovery() yee.HandlerFunc {
 					str.WriteString(fmt.Sprintf("\n\t%s:%d", file, line))
 				}
 				c.Logger().Critical(fmt.Sprintf("[PANIC RECOVER] %v %s\n", err, str.String()))
+				_ = c.ServerError(http.StatusInternalServerError, "Internal Server Error")
 			}
 		}()
 		c.Next()
-		return c.ServerError(http.StatusInternalServerError, "Internal Server Error")
+		return
 	}
 }
