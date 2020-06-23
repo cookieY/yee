@@ -344,7 +344,7 @@ var parseAPI = []*Route{
 	{"POST", "/1/functions"},
 }
 
-func yeeHandler(method, path string) UserFunc {
+func yeeHandler(method, path string) HandlerFunc {
 	return func(c Context) error {
 		return c.String(http.StatusOK, "OK")
 	}
@@ -399,7 +399,6 @@ func BenchmarkYeeGitHubAPI(b *testing.B) {
 	loadYeeRoutes(e, githubAPI)
 	benchmarkRoutes(b, e, githubAPI)
 }
-
 
 func Benchmark(b *testing.B) {
 	runtime.GOMAXPROCS(runtime.NumCPU())

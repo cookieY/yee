@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"github.com/cookieY/yee"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -19,6 +20,7 @@ func TestRequestID(t *testing.T) {
 	rec := httptest.NewRecorder()
 
 	y.ServeHTTP(rec, req)
+	fmt.Println(rec.Header().Get(yee.HeaderXRequestID))
 	assert.Equal(t, http.StatusOK, rec.Code)
 	assert.NotEqual(t, "", rec.Header().Get(yee.HeaderXRequestID))
 }

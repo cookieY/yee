@@ -49,6 +49,13 @@ func (r *router) OPTIONS(path string, handler ...HandlerFunc) {
 	r.handle(http.MethodOptions, path, handler)
 }
 
+func (r *router) Any(path string, handler ...HandlerFunc) {
+	r.handle(http.MethodGet, path, handler)
+	r.handle(http.MethodPost, path, handler)
+	r.handle(http.MethodPut, path, handler)
+	r.handle(http.MethodDelete, path, handler)
+}
+
 func (r *router) Use(middleware ...HandlerFunc) {
 	r.handlers = append(r.handlers, middleware...)
 }

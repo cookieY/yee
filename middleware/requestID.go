@@ -2,6 +2,8 @@ package middleware
 
 import (
 	"github.com/cookieY/yee"
+	"github.com/google/uuid"
+	"strings"
 )
 
 type RequestIDConfig struct {
@@ -13,7 +15,7 @@ var DefaultRequestIDConfig = RequestIDConfig{
 }
 
 func defaultGenerator() string {
-	return yee.RandomString(16)
+	return strings.Replace(uuid.New().String(), "-", "", -1)
 }
 
 func RequestID() yee.HandlerFunc {

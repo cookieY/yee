@@ -3,11 +3,12 @@ package middleware
 import (
 	"errors"
 	"fmt"
-	"github.com/cookieY/yee"
-	"github.com/dgrijalva/jwt-go"
 	"net/http"
 	"reflect"
 	"strings"
+
+	"github.com/cookieY/yee"
+	"github.com/dgrijalva/jwt-go"
 )
 
 type JwtConfig struct {
@@ -29,9 +30,7 @@ type JWTErrorHandler func(error) error
 // JWTSuccessHandler defines a function which is executed for a valid token.
 type JWTSuccessHandler func(yee.Context)
 
-const (
-	AlgorithmHS256 = "HS256"
-)
+const AlgorithmHS256 = "HS256"
 
 var DefaultJwtConfig = JwtConfig{
 	GetKey:        "auth",

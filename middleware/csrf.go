@@ -4,6 +4,7 @@ import (
 	"crypto/subtle"
 	"errors"
 	"github.com/cookieY/yee"
+	"github.com/google/uuid"
 	"net/http"
 	"strings"
 	"time"
@@ -78,7 +79,7 @@ func CSRFWithConfig(config CSRFConfig) yee.HandlerFunc {
 		k, err := context.Cookie(config.CookieName)
 		token := ""
 		if err != nil {
-			token = yee.RandomString(config.TokenLength)
+			token = strings.Replace(uuid.New().String(), "-", "", -1)
 		} else {
 			token = k.Value
 		}

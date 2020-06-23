@@ -2,9 +2,11 @@ package middleware
 
 import (
 	"github.com/cookieY/yee"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -33,7 +35,7 @@ func TestCSRFWithConfig(t *testing.T) {
 	assert.Equal(t, "invalid csrf token", rec.Body.String())
 	assert.Equal(t, http.StatusForbidden, rec.Code)
 
-	token := yee.RandomString(16)
+	token := strings.Replace(uuid.New().String(), "-", "", -1)
 	req = httptest.NewRequest(http.MethodPost, "/", nil)
 	req.Header.Set(yee.HeaderCookie, "_csrf="+token)
 	req.Header.Set(yee.HeaderXCSRFToken, token)

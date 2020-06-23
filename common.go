@@ -1,49 +1,10 @@
 package yee
 
 import (
-	"math/rand"
 	"path"
 	"reflect"
-	"strings"
-	"time"
 	"unsafe"
 )
-
-const (
-	Uppercase    = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	Lowercase    = "abcdefghijklmnopqrstuvwxyz"
-	Alphabetic   = Uppercase + Lowercase
-	Numeric      = "0123456789"
-	Alphanumeric = Alphabetic + Numeric
-)
-
-var (
-	global = RandomInit()
-)
-
-type Random struct{}
-
-func RandomInit() *Random {
-	rand.Seed(time.Now().UnixNano())
-	return new(Random)
-}
-
-func (r *Random) String(length uint8, charsets ...string) string {
-	charset := strings.Join(charsets, "")
-	if charset == "" {
-		charset = Alphanumeric
-	}
-	b := make([]byte, length)
-	for i := range b {
-		b[i] = charset[rand.Int63()%int64(len(charset))]
-	}
-	return string(b)
-}
-
-func RandomString(length uint8, charsets ...string) string {
-	return global.String(length, charsets...)
-}
-
 
 // StringToBytes converts string to byte slice without a memory allocation.
 func StringToBytes(s string) (b []byte) {
