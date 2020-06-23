@@ -13,6 +13,13 @@ type router struct {
 	basePath string
 }
 
+type RestfulApi struct {
+	Get    HandlerFunc
+	Post   HandlerFunc
+	Delete HandlerFunc
+	Put    HandlerFunc
+}
+
 // Implement the HTTP method and add to the router table
 // GET,POST,PUT,DELETE,OPTIONS,TRACE,HEAD,PATCH
 // these are defined in RFC 7231 section 4.3.
@@ -49,11 +56,28 @@ func (r *router) OPTIONS(path string, handler ...HandlerFunc) {
 	r.handle(http.MethodOptions, path, handler)
 }
 
+func (r *router) Restful(path string, api RestfulApi) {
+
+	if api.Get != nil {
+		r.handle(http.MethodGet, path, HandlersChain{api.Get})
+	}
+	if api.Post != nil {
+		r.handle(http.MethodPost, path, HandlersChain{api.Post})
+	}
+	if api.Put != nil {
+		r.handle(http.MethodPut, path, HandlersChain{api.Put})
+	}
+	if api.Delete != nil {
+		r.handle(http.MethodDelete, path, HandlersChain{api.Delete})
+	}
+}
+
 func (r *router) Any(path string, handler ...HandlerFunc) {
-	r.handle(http.MethodGet, path, handler)
 	r.handle(http.MethodPost, path, handler)
+	r.handle(http.MethodGet, path, handler)
 	r.handle(http.MethodPut, path, handler)
 	r.handle(http.MethodDelete, path, handler)
+	r.handle(http.MethodOptions, path, handler)
 }
 
 func (r *router) Use(middleware ...HandlerFunc) {

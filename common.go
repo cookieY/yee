@@ -19,8 +19,6 @@ func BytesToString(b []byte) string {
 	return *(*string)(unsafe.Pointer(&b))
 }
 
-
-
 func lastChar(str string) uint8 {
 	if str == "" {
 		panic("The length of the string can't be 0")

@@ -21,6 +21,8 @@ Yee is available as a Go module. You need to use Go 1.13 +
 
 ## Example
 
+#### Quick start
+
 ```go
  	y := yee.New()
 
@@ -43,6 +45,73 @@ Yee is available as a Go module. You need to use Go 1.13 +
 	})
 
         y.Run(":9000")
+```
+
+#### API 
+    
+Provide GET POST PUT DELETE HEAD OPTIONS TRACE PATCH
+    
+```go
+    
+  y := yee.New()
+    
+  y.GET("/someGet", handler)
+  y.POST("/somePost", handler)
+  y.PUT("/somePut", handler)
+  y.DELETE("/someDelete", handler)
+  y.PATCH("/somePatch", handler)
+  y.HEAD("/someHead", handler)
+  y.OPTIONS("/someOptions", handler)
+    
+  y.Run(":8000")
+    
+```
+    
+#### Restful
+
+You can use Any & Restful method to implement your restful api
+
++ Any
+
+```go
+  y := yee.New()
+    
+  y.Any("/any", handler)
+    
+  y.Run(":8000")
+
+  // All request methods for the same URL use the same handler
+
+```
+
++ Restful
+
+```go
+
+  func userUpdate(c Context) (err error) {
+  	return c.String(http.StatusOK, "updated")
+  }
+  
+  func userFetch(c Context) (err error) {
+  	return c.String(http.StatusOK, "get it")
+  }
+  
+  func RestfulApi() RestfulApi {
+  	return RestfulApi{
+  		Get:  userFetch,
+  		Post: userUpdate,
+  	}
+  }
+  
+  y := New()
+  
+  y.Restful("/", testRestfulApi())
+  
+  y.Run(":8000")
+ 
+// All request methods for the same URL use the different handler
+
+ 
 ```
 
 ## Middleware

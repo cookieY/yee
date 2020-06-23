@@ -137,7 +137,7 @@ func TestRouterMixin(t *testing.T) {
 		},
 	}
 
-	for _, i:= range c {
+	for _, i := range c {
 		req := httptest.NewRequest(http.MethodGet, i.uri, nil)
 		rec := httptest.NewRecorder()
 		y.ServeHTTP(rec, req)
@@ -147,3 +147,97 @@ func TestRouterMixin(t *testing.T) {
 }
 
 // If you want to test routing performance, You can use benchmark_test to get it
+
+// --- testing any method
+
+func testRestfulApi() RestfulApi {
+
+	var api RestfulApi
+
+	api.Get = func(c Context) (err error) {
+		return c.String(http.StatusOK, "get")
+	}
+
+	api.Post = func(c Context) (err error) {
+		return c.String(http.StatusOK, "post")
+	}
+
+	api.Delete = func(c Context) (err error) {
+		return c.String(http.StatusOK, "delete")
+	}
+
+	api.Put = func(c Context) (err error) {
+		return c.String(http.StatusOK, "put")
+	}
+
+	return api
+}
+
+func userUpdate(c Context) (err error) {
+	return c.String(http.StatusOK, "updated")
+}
+
+func userFetch(c Context) (err error) {
+	return c.String(http.StatusOK, "get it")
+}
+
+func test2RestfulApi() RestfulApi {
+	return RestfulApi{
+		Get:  userFetch,
+		Post: userUpdate,
+	}
+}
+
+func TestAnyMethod(t *testing.T) {
+
+	y := New()
+
+	y.Restful("/", testRestfulApi())
+	y.Restful("/user", test2RestfulApi())
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	rec := httptest.NewRecorder()
+	y.ServeHTTP(rec, req)
+	assert.Equal(t, "get", rec.Body.String())
+	assert.Equal(t, http.StatusOK, rec.Code)
+
+	req = httptest.NewRequest(http.MethodPost, "/", nil)
+	rec = httptest.NewRecorder()
+	y.ServeHTTP(rec, req)
+	assert.Equal(t, "post", rec.Body.String())
+	assert.Equal(t, http.StatusOK, rec.Code)
+
+	req = httptest.NewRequest(http.MethodPut, "/", nil)
+	rec = httptest.NewRecorder()
+	y.ServeHTTP(rec, req)
+	assert.Equal(t, "put", rec.Body.String())
+	assert.Equal(t, http.StatusOK, rec.Code)
+
+	req = httptest.NewRequest(http.MethodDelete, "/", nil)
+	rec = httptest.NewRecorder()
+	y.ServeHTTP(rec, req)
+	assert.Equal(t, "delete", rec.Body.String())
+	assert.Equal(t, http.StatusOK, rec.Code)
+
+	req = httptest.NewRequest(http.MethodGet, "/user", nil)
+	rec = httptest.NewRecorder()
+	y.ServeHTTP(rec, req)
+	assert.Equal(t, "get it", rec.Body.String())
+	assert.Equal(t, http.StatusOK, rec.Code)
+
+	req = httptest.NewRequest(http.MethodPost, "/user", nil)
+	rec = httptest.NewRecorder()
+	y.ServeHTTP(rec, req)
+	assert.Equal(t, "updated", rec.Body.String())
+	assert.Equal(t, http.StatusOK, rec.Code)
+
+	req = httptest.NewRequest(http.MethodPut, "/user", nil)
+	rec = httptest.NewRecorder()
+	y.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+
+	req = httptest.NewRequest(http.MethodDelete, "/user", nil)
+	rec = httptest.NewRecorder()
+	y.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
