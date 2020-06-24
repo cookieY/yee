@@ -96,7 +96,7 @@ You can use Any & Restful method to implement your restful api
   	return c.String(http.StatusOK, "get it")
   }
   
-  func RestfulApi() RestfulApi {
+  func RestfulApi() yee.RestfulApi {
   	return RestfulApi{
   		Get:  userFetch,
   		Post: userUpdate,
