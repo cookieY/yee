@@ -2,10 +2,11 @@ package yee
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRouterParam(t *testing.T) {
@@ -150,9 +151,9 @@ func TestRouterMixin(t *testing.T) {
 
 // --- testing any method
 
-func testRestfulApi() RestfulApi {
+func testRestfulAPI() RestfulAPI {
 
-	var api RestfulApi
+	var api RestfulAPI
 
 	api.Get = func(c Context) (err error) {
 		return c.String(http.StatusOK, "get")
@@ -181,8 +182,8 @@ func userFetch(c Context) (err error) {
 	return c.String(http.StatusOK, "get it")
 }
 
-func test2RestfulApi() RestfulApi {
-	return RestfulApi{
+func test2RestfulAPI() RestfulAPI {
+	return RestfulAPI{
 		Get:  userFetch,
 		Post: userUpdate,
 	}
@@ -192,8 +193,8 @@ func TestAnyMethod(t *testing.T) {
 
 	y := New()
 
-	y.Restful("/", testRestfulApi())
-	y.Restful("/user", test2RestfulApi())
+	y.Restful("/", testRestfulAPI())
+	y.Restful("/user", test2RestfulAPI())
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	rec := httptest.NewRecorder()

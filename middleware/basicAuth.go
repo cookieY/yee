@@ -3,28 +3,32 @@ package middleware
 import (
 	"encoding/base64"
 	"errors"
-	"github.com/cookieY/yee"
 	"net/http"
 	"strings"
+
+	"github.com/cookieY/yee"
 )
 
+// BasicAuthConfig defines the config of basicAuth middleware
 type BasicAuthConfig struct {
 	Validator fnValidator
 	Realm     string
 }
 
-type fnValidator func([]byte) (error, bool)
+type fnValidator func([]byte) (bool, error)
 
 const (
 	basic = "basic"
 )
 
+// BasicAuth is the default implementation BasicAuth middleware
 func BasicAuth(fn fnValidator) yee.HandlerFunc {
 	config := BasicAuthConfig{Validator: fn}
 	config.Realm = "."
 	return BasicAuthWithConfig(config)
 }
 
+// BasicAuthWithConfig is the custom implementation BasicAuth middleware
 func BasicAuthWithConfig(config BasicAuthConfig) yee.HandlerFunc {
 
 	if config.Validator == nil {
@@ -32,8 +36,8 @@ func BasicAuthWithConfig(config BasicAuthConfig) yee.HandlerFunc {
 	}
 
 	return func(context yee.Context) (err error) {
-		_, decode := parserVerifyData(context)
-		if err, verify := config.Validator(decode); err == nil && verify {
+		decode, _ := parserVerifyData(context)
+		if verify, err := config.Validator(decode); err == nil && verify {
 			return err
 		}
 
@@ -43,7 +47,7 @@ func BasicAuthWithConfig(config BasicAuthConfig) yee.HandlerFunc {
 	}
 }
 
-func parserVerifyData(context yee.Context) (error, []byte) {
+func parserVerifyData(context yee.Context) ([]byte, error) {
 	var decode []byte
 	res := context.Request()
 	if res.Header.Get(yee.HeaderAuthorization) != "" {
@@ -51,11 +55,11 @@ func parserVerifyData(context yee.Context) (error, []byte) {
 		if auth[0] == basic {
 			decode, err := base64.StdEncoding.DecodeString(auth[1])
 			if err != nil {
-				return err, decode
+				return decode, err
 			}
-			return nil, decode
+			return decode, nil
 		}
-		return errors.New("cannot get basic keyword"), decode
+		return decode, errors.New("cannot get basic keyword")
 	}
-	return errors.New("authorization header is empty"), decode
+	return decode, errors.New("authorization header is empty")
 }

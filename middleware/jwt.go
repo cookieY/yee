@@ -11,6 +11,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
+// JwtConfig defines the config of JWT middleware
 type JwtConfig struct {
 	GetKey         string
 	AuthScheme     string
@@ -25,21 +26,24 @@ type JwtConfig struct {
 
 type jwtExtractor func(yee.Context) (string, error)
 
+// JWTErrorHandler defines a function which is error for a valid token.
 type JWTErrorHandler func(error) error
 
 // JWTSuccessHandler defines a function which is executed for a valid token.
 type JWTSuccessHandler func(yee.Context)
 
-const AlgorithmHS256 = "HS256"
+const algorithmHS256 = "HS256"
 
+// DefaultJwtConfig is the default config of JWT middleware
 var DefaultJwtConfig = JwtConfig{
 	GetKey:        "auth",
-	SigningMethod: AlgorithmHS256,
+	SigningMethod: algorithmHS256,
 	AuthScheme:    "Bearer",
 	TokenLookup:   "header:" + yee.HeaderAuthorization,
 	Claims:        jwt.MapClaims{},
 }
 
+// JWTWithConfig is the custom implementation CORS middleware
 func JWTWithConfig(config JwtConfig) yee.HandlerFunc {
 	if config.SigningKey == nil {
 		panic("yee: jwt middleware requires signing key")

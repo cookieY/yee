@@ -13,7 +13,6 @@ import (
 )
 
 type (
-	// Binder is the interface that wraps the Bind method.
 	// DefaultBinder is the default implementation of the Binder interface.
 	DefaultBinder struct{}
 

@@ -2,12 +2,14 @@ package middleware
 
 import (
 	"fmt"
-	"github.com/cookieY/yee"
-	"github.com/valyala/fasttemplate"
 	"io"
 	"log"
+
+	"github.com/cookieY/yee"
+	"github.com/valyala/fasttemplate"
 )
 
+//LoggerConfig defines config of logger middleware
 type (
 	LoggerConfig struct {
 		Format   string
@@ -16,16 +18,19 @@ type (
 	}
 )
 
+// DefaultLoggerConfig is default config of logger middleware
 var DefaultLoggerConfig = LoggerConfig{
 	Format:   `"url":"${url}" "method":"${method}" "status":${status} "protocol":"${protocol}" "remote_ip":"${remote_ip}" "bytes_in": "${bytes_in} bytes" "bytes_out": "${bytes_out} bytes"`,
 	Level:    3,
 	IsLogger: true,
 }
 
+// Logger is default implementation of logger middleware
 func Logger() yee.HandlerFunc {
 	return LoggerWithConfig(DefaultLoggerConfig)
 }
 
+// LoggerWithConfig is custom implementation of logger middleware
 func LoggerWithConfig(config LoggerConfig) yee.HandlerFunc {
 	if config.Format == "" {
 		config.Format = DefaultLoggerConfig.Format
@@ -62,7 +67,7 @@ func LoggerWithConfig(config LoggerConfig) yee.HandlerFunc {
 			case "status":
 				return w.Write([]byte(fmt.Sprintf("%d", context.Response().Status())))
 			case "remote_ip":
-				return w.Write([]byte(context.RemoteIp()))
+				return w.Write([]byte(context.RemoteIP()))
 			case "host":
 				return w.Write([]byte(context.Request().Host))
 			case "protocol":

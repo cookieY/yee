@@ -12,8 +12,10 @@ import (
 	"golang.org/x/net/http2/h2c"
 )
 
+// HandlerFunc define handler of context
 type HandlerFunc func(Context) (err error)
 
+// HandlersChain define handler chain of context
 type HandlersChain []HandlerFunc
 
 // Core implement  httpServer interface
@@ -36,11 +38,7 @@ type Core struct {
 	Banner                 bool
 }
 
-type YeeConfig struct {
-	Banner bool
-}
-
-const Version = "v0.1.1"
+const version = "v0.1.1"
 
 const creator = "Creator: Henry Yee"
 const title = "-----Easier and Faster-----"
@@ -55,6 +53,7 @@ const banner = `
 %s
 `
 
+// New create a core and perform a series of initializations
 func New() *Core {
 
 	router := &router{
@@ -75,10 +74,11 @@ func New() *Core {
 	core.pool.New = func() interface{} {
 		return core.allocateContext()
 	}
-	core.l.producer.Printf(banner, core.l.producer.Green(Version), core.l.producer.Red(title), core.l.producer.Cyan(creator))
+	core.l.producer.Printf(banner, core.l.producer.Green(version), core.l.producer.Red(title), core.l.producer.Cyan(creator))
 	return core
 }
 
+// SetLogLevel define custom log level
 func (c *Core) SetLogLevel(l uint8) {
 	c.l.SetLevel(l)
 }
@@ -88,10 +88,10 @@ func (c *Core) allocateContext() *context {
 	return &context{engine: c, params: &v, index: -1}
 }
 
+// Use defines which middleware is uesd
 // when we dose not match prefix or method
 // we`ll register noRoute or noMethod handle for this
 // otherwise, we cannot be verified for noRoute/noMethod
-
 func (c *Core) Use(middleware ...HandlerFunc) {
 	c.router.Use(middleware...)
 	c.rebuild404Handlers()
@@ -124,7 +124,7 @@ func (c *Core) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c.pool.Put(context)
 }
 
-// the func is for testing
+// NewContext is for testing
 func (c *Core) NewContext(r *http.Request, w http.ResponseWriter) Context {
 	context := new(context)
 	context.writermem.reset(w)
@@ -134,6 +134,7 @@ func (c *Core) NewContext(r *http.Request, w http.ResponseWriter) Context {
 	return context
 }
 
+// Run is launch of http
 func (c *Core) Run(addr string) {
 	if err := http.ListenAndServe(addr, c); err != nil {
 		c.l.Critical(err.Error())
@@ -141,6 +142,7 @@ func (c *Core) Run(addr string) {
 	}
 }
 
+// RunTLS is launch of tls
 // golang supports http2,if client supports http2
 // Otherwise, the http protocol return to http1.1
 func (c *Core) RunTLS(addr, certFile, keyFile string) {
@@ -150,6 +152,7 @@ func (c *Core) RunTLS(addr, certFile, keyFile string) {
 	}
 }
 
+// RunH2C is launch of h2c
 // In normal conditions, http2 must used certificate
 // H2C is non-certificate`s http2
 // notes:

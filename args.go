@@ -4,6 +4,7 @@ import (
 	"errors"
 )
 
+// Header types
 const (
 	HeaderAccept              = "Accept"
 	HeaderAcceptEncoding      = "Accept-Encoding"
@@ -82,16 +83,15 @@ const (
 
 const (
 	charsetUTF8 = "charset=UTF-8"
-	serverName = "yee"
+	serverName  = "yee"
 )
 
-
+// Err types
 var (
-	ErrUnsupportedMediaType        = errors.New("http server not support media type")
-	ErrValidatorNotRegistered      = errors.New("validator not registered")
-	ErrRendererNotRegistered       = errors.New("renderer not registered")
-	ErrInvalidRedirectCode         = errors.New("invalid redirect status code")
-	ErrCookieNotFound              = errors.New("cookie not found")
-	ErrInvalidCertOrKeyType        = errors.New("invalid cert or key type, must be string or []byte")
+	ErrUnsupportedMediaType   = errors.New("http server not support media type")
+	ErrValidatorNotRegistered = errors.New("validator not registered")
+	ErrRendererNotRegistered  = errors.New("renderer not registered")
+	ErrInvalidRedirectCode    = errors.New("invalid redirect status code")
+	ErrCookieNotFound         = errors.New("cookie not found")
+	ErrInvalidCertOrKeyType   = errors.New("invalid cert or key type, must be string or []byte")
 )
-

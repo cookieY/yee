@@ -2,14 +2,16 @@ package yee
 
 import (
 	"fmt"
-	"github.com/cookieY/yee/color"
 	"os"
 	"runtime"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/cookieY/yee/color"
 )
 
+// logger types
 const (
 	Critical = iota
 	Error
@@ -27,6 +29,7 @@ type logger struct {
 	producer *color.Color
 }
 
+// Logger ...
 type Logger interface {
 	Critical(msg string)
 	Error(msg string)
@@ -36,6 +39,7 @@ type Logger interface {
 	SetLevel(level uint8)
 }
 
+// LogCreator ...
 func LogCreator() *logger {
 	l := new(logger)
 	l.producer = color.New()
@@ -77,9 +81,9 @@ func (l *logger) logWrite(msgText string, level uint8) (string, bool) {
 			src = strings.Replace(
 				fmt.Sprintf("%s:%d", file, lineno), "%2e", ".", -1)
 		}
-		msgText = fmt.Sprintf("%s [%s] %s (%s) %s", Version, mappingLevel[level], time.Now().Format(timeFormat), src, msgText)
+		msgText = fmt.Sprintf("%s [%s] %s (%s) %s", version, mappingLevel[level], time.Now().Format(timeFormat), src, msgText)
 	} else {
-		msgText = fmt.Sprintf("%s [%s] %s %s", Version, mappingLevel[level], time.Now().Format(timeFormat), msgText)
+		msgText = fmt.Sprintf("%s [%s] %s %s", version, mappingLevel[level], time.Now().Format(timeFormat), msgText)
 	}
 
 	return msgText, true

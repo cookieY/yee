@@ -16,6 +16,7 @@ import (
 
 const abortIndex int8 = math.MaxInt8 / 2
 
+// Context is the default implementation  interface of context
 type Context interface {
 	Request() *http.Request
 	Response() ResponseWriter
@@ -36,7 +37,7 @@ type Context interface {
 	Params(name string) string
 	RequestURI() string
 	Scheme() string
-	IsTls() bool
+	IsTLS() bool
 	Next()
 	HTMLTml(code int, tml string) (err error)
 	QueryParams() map[string][]string
@@ -47,7 +48,7 @@ type Context interface {
 	Get(key string) interface{}
 	Put(key string, values interface{})
 	ServerError(code int, defaultMessage string) error
-	RemoteIp() string
+	RemoteIP() string
 	Logger() Logger
 	Reset()
 }
@@ -119,7 +120,7 @@ func (c *context) ServerError(code int, defaultMessage string) error {
 		c.writermem.Header()["Content-Type"] = []string{MIMETextPlainCharsetUTF8}
 		_, err := c.w.Write([]byte(defaultMessage))
 		if err != nil {
-			return errors.New(fmt.Sprintf("cannot write message to writer during serve error: %v", err))
+			return fmt.Errorf("cannot write message to writer during serve error: %v", err)
 		}
 		return nil
 	}
@@ -150,7 +151,7 @@ func (c *context) Response() ResponseWriter {
 	return c.w
 }
 
-func (c *context) RemoteIp() string {
+func (c *context) RemoteIP() string {
 	if ip := c.r.Header.Get(HeaderXForwardedFor); ip != "" {
 		return strings.Split(ip, ", ")[0]
 	}
@@ -302,7 +303,7 @@ func (c *context) Scheme() string {
 	return scheme
 }
 
-func (c *context) IsTls() bool {
+func (c *context) IsTLS() bool {
 	return c.r.TLS != nil
 }
 

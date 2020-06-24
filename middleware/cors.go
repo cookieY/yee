@@ -1,12 +1,14 @@
 package middleware
 
 import (
-	"github.com/cookieY/yee"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/cookieY/yee"
 )
 
+// CORSConfig defined the config of CORS middleware
 type CORSConfig struct {
 	Origins          []string
 	AllowMethods     []string
@@ -16,6 +18,7 @@ type CORSConfig struct {
 	MaxAge           int
 }
 
+// DefaultCORSConfig is the default config of  CORS middleware
 var DefaultCORSConfig = CORSConfig{
 	Origins: []string{"*"},
 	AllowMethods: []string{
@@ -31,10 +34,12 @@ var DefaultCORSConfig = CORSConfig{
 	},
 }
 
+// Cors is the default implementation CORS middleware
 func Cors() yee.HandlerFunc {
 	return CorsWithConfig(DefaultCORSConfig)
 }
 
+// CorsWithConfig is the default implementation CORS middleware
 func CorsWithConfig(config CORSConfig) yee.HandlerFunc {
 
 	if len(config.Origins) == 0 {

@@ -1,12 +1,14 @@
 package middleware
 
 import (
-	"github.com/cookieY/yee"
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/cookieY/yee"
 )
 
+// RateLimitConfig defines config of rateLimit middleware
 type RateLimitConfig struct {
 	Time    time.Duration
 	Rate    int
@@ -14,15 +16,18 @@ type RateLimitConfig struct {
 	numbers int
 }
 
+// DefaultRateLimit is the default config of rateLimit middleware
 var DefaultRateLimit = RateLimitConfig{
 	Time: 1 * time.Second,
 	Rate: 5,
 }
 
+// RateLimit is the default implementation of rateLimit middleware
 func RateLimit() yee.HandlerFunc {
 	return RateLimitWithConfig(DefaultRateLimit)
 }
 
+// RateLimitWithConfig is the custom implementation of rateLimit middleware
 func RateLimitWithConfig(config RateLimitConfig) yee.HandlerFunc {
 
 	if config.Time == 0 {

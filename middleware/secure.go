@@ -2,10 +2,13 @@ package middleware
 
 import (
 	"fmt"
+
 	"github.com/cookieY/yee"
 )
 
 type (
+
+	//SecureConfig defines config of secure middleware
 	SecureConfig struct {
 		XSSProtection string `yaml:"xss_protection"`
 
@@ -27,6 +30,7 @@ type (
 	}
 )
 
+// DefaultSecureConfig is default config of secure middleware
 var DefaultSecureConfig = SecureConfig{
 	XSSProtection:      "1; mode=block",
 	ContentTypeNosniff: "nosniff",
@@ -34,10 +38,12 @@ var DefaultSecureConfig = SecureConfig{
 	HSTSPreloadEnabled: false,
 }
 
+// Secure is default implementation of secure middleware
 func Secure() yee.HandlerFunc {
 	return SecureWithConfig(DefaultSecureConfig)
 }
 
+// SecureWithConfig is custom implementation of secure middleware
 func SecureWithConfig(config SecureConfig) yee.HandlerFunc {
 	return func(c yee.Context) (err error) {
 
@@ -53,7 +59,7 @@ func SecureWithConfig(config SecureConfig) yee.HandlerFunc {
 			c.SetHeader(yee.HeaderXFrameOptions, config.XFrameOptions)
 		}
 
-		if (c.IsTls() || (c.GetHeader(yee.HeaderXForwardedProto) == "https")) && config.HSTSMaxAge != 0 {
+		if (c.IsTLS() || (c.GetHeader(yee.HeaderXForwardedProto) == "https")) && config.HSTSMaxAge != 0 {
 			subdomains := ""
 			if !config.HSTSExcludeSubdomains {
 				subdomains = "; includeSubdomains"

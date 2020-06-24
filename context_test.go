@@ -1,17 +1,18 @@
 package yee
 
 import (
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var testData = `{"id":1,"name":"Jon Snow"}`
 
 type res struct {
-	Id   int    `json:"id"`
+	ID   int    `json:"id"`
 	Name string `json:"name"`
 }
 
@@ -28,7 +29,7 @@ func TestContextJSON(t *testing.T) {
 	req.Header.Set("Content-Type", MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	y.ServeHTTP(rec, req)
-	assert.Equal(t,testData+"\n",rec.Body.String())
+	assert.Equal(t, testData+"\n", rec.Body.String())
 }
 
 func BenchmarkAllocJSON(b *testing.B) {
@@ -59,9 +60,8 @@ func BenchmarkAllocString(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		req := httptest.NewRequest(http.MethodPost, "/",nil)
+		req := httptest.NewRequest(http.MethodPost, "/", nil)
 		rec := httptest.NewRecorder()
 		y.ServeHTTP(rec, req)
 	}
 }
-

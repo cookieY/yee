@@ -3,12 +3,13 @@ package yee
 import (
 	"crypto/tls"
 	"fmt"
-	"golang.org/x/net/http2"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
 	"testing"
+
+	"golang.org/x/net/http2"
 )
 
 func TestH2(T *testing.T) {

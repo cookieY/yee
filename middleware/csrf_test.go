@@ -1,19 +1,20 @@
 package middleware
 
 import (
-	"github.com/cookieY/yee"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/cookieY/yee"
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCSRFWithConfig(t *testing.T) {
 
 	y := yee.New()
-	y.Use(Csrf())
+	y.Use(CSRF())
 	y.POST("/", func(context yee.Context) error {
 		return context.String(http.StatusOK, "ok")
 	})

@@ -3,14 +3,16 @@ package middleware
 import (
 	"bufio"
 	"compress/gzip"
-	"github.com/cookieY/yee"
 	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"strings"
+
+	"github.com/cookieY/yee"
 )
 
+// GzipConfig defines config of Gzip middleware
 type GzipConfig struct {
 	Level int
 }
@@ -20,12 +22,15 @@ type gzipResponseWriter struct {
 	http.ResponseWriter
 }
 
+// DefaultGzipConfig is the default config of gzip middleware
 var DefaultGzipConfig = GzipConfig{Level: 1}
 
+// Gzip is the default implementation of gzip middleware
 func Gzip() yee.HandlerFunc {
 	return GzipWithConfig(DefaultGzipConfig)
 }
 
+// GzipWithConfig is the custom implementation of gzip middleware
 func GzipWithConfig(config GzipConfig) yee.HandlerFunc {
 	if config.Level == 0 {
 		config.Level = DefaultGzipConfig.Level

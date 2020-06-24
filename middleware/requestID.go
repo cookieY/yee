@@ -1,15 +1,18 @@
 package middleware
 
 import (
+	"strings"
+
 	"github.com/cookieY/yee"
 	"github.com/google/uuid"
-	"strings"
 )
 
+// RequestIDConfig defines config of requestID middleware
 type RequestIDConfig struct {
 	generator func() string
 }
 
+// DefaultRequestIDConfig is the default config of requestID middleware
 var DefaultRequestIDConfig = RequestIDConfig{
 	generator: defaultGenerator,
 }
@@ -18,10 +21,12 @@ func defaultGenerator() string {
 	return strings.Replace(uuid.New().String(), "-", "", -1)
 }
 
+// RequestID is the default implementation of requestID middleware
 func RequestID() yee.HandlerFunc {
 	return RequestIDWithConfig(DefaultRequestIDConfig)
 }
 
+// RequestIDWithConfig is the custom implementation of requestID middleware
 func RequestIDWithConfig(config RequestIDConfig) yee.HandlerFunc {
 
 	if config.generator == nil {

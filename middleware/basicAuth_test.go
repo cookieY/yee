@@ -3,11 +3,12 @@ package middleware
 import (
 	"encoding/base64"
 	"encoding/json"
-	"github.com/cookieY/yee"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/cookieY/yee"
+	"github.com/stretchr/testify/assert"
 )
 
 type user struct {
@@ -15,15 +16,15 @@ type user struct {
 	Password string
 }
 
-func validator(auth []byte) (error, bool) {
+func validator(auth []byte) (bool, error) {
 	var u user
 	if err := json.Unmarshal(auth, &u); err != nil {
-		return err, false
+		return false, err
 	}
 	if u.Username == "test" && u.Password == "123123" {
-		return nil, true
+		return true, nil
 	}
-	return nil, false
+	return false, nil
 
 }
 
@@ -52,4 +53,3 @@ func TestBasicAuth(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rec.Code)
 
 }
-

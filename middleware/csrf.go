@@ -3,13 +3,15 @@ package middleware
 import (
 	"crypto/subtle"
 	"errors"
-	"github.com/cookieY/yee"
-	"github.com/google/uuid"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/cookieY/yee"
+	"github.com/google/uuid"
 )
 
+// CSRFConfig defines the config of CSRF middleware
 type CSRFConfig struct {
 	TokenLength    uint8
 	TokenLookup    string
@@ -19,11 +21,12 @@ type CSRFConfig struct {
 	CookiePath     string
 	CookieMaxAge   int
 	CookieSecure   bool
-	CookieHttpOnly bool
+	CookieHTTPOnly bool
 }
 
 type csrfTokenCreator func(yee.Context) (string, error)
 
+// CSRFDefaultConfig is the default config of CSRF middleware
 var CSRFDefaultConfig = CSRFConfig{
 	TokenLength:  16,
 	TokenLookup:  "header:" + yee.HeaderXCSRFToken,
@@ -32,10 +35,12 @@ var CSRFDefaultConfig = CSRFConfig{
 	CookieMaxAge: 28800,
 }
 
-func Csrf() yee.HandlerFunc {
+// CSRF is the default implementation CSRF middleware
+func CSRF() yee.HandlerFunc {
 	return CSRFWithConfig(CSRFDefaultConfig)
 }
 
+// CSRFWithConfig is the custom implementation CSRF middleware
 func CSRFWithConfig(config CSRFConfig) yee.HandlerFunc {
 
 	if config.TokenLength == 0 {
@@ -108,7 +113,7 @@ func CSRFWithConfig(config CSRFConfig) yee.HandlerFunc {
 		}
 		nCookie.Expires = time.Now().Add(time.Duration(config.CookieMaxAge) * time.Second)
 		nCookie.Secure = config.CookieSecure
-		nCookie.HttpOnly = config.CookieHttpOnly
+		nCookie.HttpOnly = config.CookieHTTPOnly
 		context.SetCookie(nCookie)
 
 		context.Put(config.Key, token)

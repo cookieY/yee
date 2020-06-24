@@ -13,7 +13,8 @@ type router struct {
 	basePath string
 }
 
-type RestfulApi struct {
+// RestfulAPI is the default implementation of restfulApi interface
+type RestfulAPI struct {
 	Get    HandlerFunc
 	Post   HandlerFunc
 	Delete HandlerFunc
@@ -56,7 +57,7 @@ func (r *router) OPTIONS(path string, handler ...HandlerFunc) {
 	r.handle(http.MethodOptions, path, handler)
 }
 
-func (r *router) Restful(path string, api RestfulApi) {
+func (r *router) Restful(path string, api RestfulAPI) {
 
 	if api.Get != nil {
 		r.handle(http.MethodGet, path, HandlersChain{api.Get})
