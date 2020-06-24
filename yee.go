@@ -38,7 +38,7 @@ type Core struct {
 	Banner                 bool
 }
 
-const version = "v0.1.1"
+const version = "yee v0.1.2"
 
 const creator = "Creator: Henry Yee"
 const title = "-----Easier and Faster-----"
