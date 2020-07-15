@@ -10,6 +10,8 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 )
@@ -32,6 +34,7 @@ type Context interface {
 	FormValue(name string) string
 	FormParams() (url.Values, error)
 	FormFile(name string) (*multipart.FileHeader, error)
+	File(file string) error
 	MultipartForm() (*multipart.Form, error)
 	Redirect(code int, uri string) error
 	Params(name string) string
@@ -118,6 +121,7 @@ func (c *context) ServerError(code int, defaultMessage string) error {
 	}
 	if c.writermem.Status() == code {
 		c.writermem.Header()["Content-Type"] = []string{MIMETextPlainCharsetUTF8}
+		c.Logger().Error(fmt.Sprintf("%s %s", c.r.URL, defaultMessage))
 		_, err := c.w.Write([]byte(defaultMessage))
 		if err != nil {
 			return fmt.Errorf("cannot write message to writer during serve error: %v", err)
@@ -275,6 +279,30 @@ func (c *context) FormParams() (url.Values, error) {
 func (c *context) FormFile(name string) (*multipart.FileHeader, error) {
 	_, fd, err := c.r.FormFile(name)
 	return fd, err
+}
+
+func (c *context) File(file string) error {
+	fd, err := os.Open(file)
+	if err != nil {
+		return err
+	}
+
+	defer fd.Close()
+
+	f, _ := fd.Stat()
+	if f.IsDir() {
+		file = filepath.Join(file, indexPage)
+		fd, err = os.Open(file)
+		if err != nil {
+			return ErrNotFoundHandler
+		}
+		defer fd.Close()
+		if f, err = fd.Stat(); err != nil {
+			return err
+		}
+	}
+	http.ServeContent(c.Response(), c.Request(), f.Name(), f.ModTime(), fd)
+	return nil
 }
 
 func (c *context) MultipartForm() (*multipart.Form, error) {

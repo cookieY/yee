@@ -44,6 +44,7 @@ func LogCreator() *logger {
 	l := new(logger)
 	l.producer = color.New()
 	l.producer.Enable()
+	l.level = 1
 	return l
 }
 
@@ -73,7 +74,7 @@ func (l *logger) logWrite(msgText string, level uint8) (string, bool) {
 	}
 
 	if !l.isLogger {
-		_, file, lineno, ok := runtime.Caller(3)
+		_, file, lineno, ok := runtime.Caller(2)
 
 		src := ""
 

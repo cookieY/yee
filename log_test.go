@@ -10,7 +10,7 @@ import (
 func TestLogger_LogWrite(t *testing.T) {
 
 	y := New()
-	y.SetLogLevel(4)
+	y.SetLogLevel(3)
 
 	y.POST("/hello/k/:b", func(c Context) error {
 		c.Logger().Critical("critical")
