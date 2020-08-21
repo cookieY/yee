@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-type router struct {
+type Router struct {
 	handlers []HandlerFunc
 	core     *Core
 	root     bool
@@ -25,39 +25,39 @@ type RestfulAPI struct {
 // GET,POST,PUT,DELETE,OPTIONS,TRACE,HEAD,PATCH
 // these are defined in RFC 7231 section 4.3.
 
-func (r *router) GET(path string, handler ...HandlerFunc) {
+func (r *Router) GET(path string, handler ...HandlerFunc) {
 	r.handle(http.MethodGet, path, handler)
 }
 
-func (r *router) POST(path string, handler ...HandlerFunc) {
+func (r *Router) POST(path string, handler ...HandlerFunc) {
 	r.handle(http.MethodPost, path, handler)
 }
 
-func (r *router) PUT(path string, handler ...HandlerFunc) {
+func (r *Router) PUT(path string, handler ...HandlerFunc) {
 	r.handle(http.MethodPut, path, handler)
 }
 
-func (r *router) DELETE(path string, handler ...HandlerFunc) {
+func (r *Router) DELETE(path string, handler ...HandlerFunc) {
 	r.handle(http.MethodDelete, path, handler)
 }
 
-func (r *router) PATCH(path string, handler ...HandlerFunc) {
+func (r *Router) PATCH(path string, handler ...HandlerFunc) {
 	r.handle(http.MethodPatch, path, handler)
 }
 
-func (r *router) HEAD(path string, handler ...HandlerFunc) {
+func (r *Router) HEAD(path string, handler ...HandlerFunc) {
 	r.handle(http.MethodHead, path, handler)
 }
 
-func (r *router) TRACE(path string, handler ...HandlerFunc) {
+func (r *Router) TRACE(path string, handler ...HandlerFunc) {
 	r.handle(http.MethodTrace, path, handler)
 }
 
-func (r *router) OPTIONS(path string, handler ...HandlerFunc) {
+func (r *Router) OPTIONS(path string, handler ...HandlerFunc) {
 	r.handle(http.MethodOptions, path, handler)
 }
 
-func (r *router) Restful(path string, api RestfulAPI) {
+func (r *Router) Restful(path string, api RestfulAPI) {
 
 	if api.Get != nil {
 		r.handle(http.MethodGet, path, HandlersChain{api.Get})
@@ -73,7 +73,7 @@ func (r *router) Restful(path string, api RestfulAPI) {
 	}
 }
 
-func (r *router) Any(path string, handler ...HandlerFunc) {
+func (r *Router) Any(path string, handler ...HandlerFunc) {
 	r.handle(http.MethodPost, path, handler)
 	r.handle(http.MethodGet, path, handler)
 	r.handle(http.MethodPut, path, handler)
@@ -81,12 +81,12 @@ func (r *router) Any(path string, handler ...HandlerFunc) {
 	r.handle(http.MethodOptions, path, handler)
 }
 
-func (r *router) Use(middleware ...HandlerFunc) {
+func (r *Router) Use(middleware ...HandlerFunc) {
 	r.handlers = append(r.handlers, middleware...)
 }
 
-func (r *router) Group(prefix string, handlers ...HandlerFunc) *router {
-	rx := &router{
+func (r *Router) Group(prefix string, handlers ...HandlerFunc) *Router {
+	rx := &Router{
 		handlers: r.combineHandlers(handlers),
 		core:     r.core,
 		basePath: r.calculateAbsolutePath(prefix),
@@ -94,7 +94,7 @@ func (r *router) Group(prefix string, handlers ...HandlerFunc) *router {
 	return rx
 }
 
-func (r *router) handle(method, path string, handlers HandlersChain) {
+func (r *Router) handle(method, path string, handlers HandlersChain) {
 	absolutePath := r.calculateAbsolutePath(path)
 	handlers = r.combineHandlers(handlers)
 	r.core.addRoute(method, absolutePath, handlers)
@@ -124,7 +124,7 @@ func (c *Core) addRoute(method, prefix string, handlers HandlersChain) {
 
 }
 
-func (r *router) Static(relativePath, root string) {
+func (r *Router) Static(relativePath, root string) {
 	if strings.Contains(relativePath, ":") || strings.Contains(relativePath, "*") {
 		panic("URL path cannot be used when serving a static folder")
 	}
@@ -135,7 +135,7 @@ func (r *router) Static(relativePath, root string) {
 
 }
 
-func (r *router) createDistHandler(relativePath string, fs http.FileSystem) HandlerFunc {
+func (r *Router) createDistHandler(relativePath string, fs http.FileSystem) HandlerFunc {
 	absolutePath := r.calculateAbsolutePath(relativePath)
 	fileServer := http.StripPrefix(absolutePath, http.FileServer(fs))
 	return func(c Context) (err error) {
@@ -152,11 +152,11 @@ func (r *router) createDistHandler(relativePath string, fs http.FileSystem) Hand
 	}
 }
 
-func (r *router) calculateAbsolutePath(relativePath string) string {
+func (r *Router) calculateAbsolutePath(relativePath string) string {
 	return joinPaths(r.basePath, relativePath)
 }
 
-func (r *router) combineHandlers(handlers HandlersChain) HandlersChain {
+func (r *Router) combineHandlers(handlers HandlersChain) HandlersChain {
 	finalSize := len(r.handlers) + len(handlers)
 	if finalSize >= int(abortIndex) {
 		panic("too many handlers")

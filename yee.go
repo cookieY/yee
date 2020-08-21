@@ -20,7 +20,7 @@ type HandlersChain []HandlerFunc
 
 // Core implement  httpServer interface
 type Core struct {
-	*router
+	*Router
 	trees                  methodTrees
 	pool                   sync.Pool
 	maxParams              uint16
@@ -38,7 +38,7 @@ type Core struct {
 	Banner                 bool
 }
 
-const version = "yee v0.1.2"
+const version = "yee v0.1.4"
 
 const creator = "Creator: Henry Yee"
 const title = "-----Easier and Faster-----"
@@ -56,7 +56,7 @@ const banner = `
 // New create a core and perform a series of initializations
 func New() *Core {
 
-	router := &router{
+	router := &Router{
 		handlers: nil,
 		root:     true,
 		basePath: "/",
@@ -64,7 +64,7 @@ func New() *Core {
 
 	core := &Core{
 		trees:  make(methodTrees, 0, 0),
-		router: router,
+		Router: router,
 		l:      LogCreator(),
 		bind:   DefaultBinder{},
 	}
@@ -93,7 +93,7 @@ func (c *Core) allocateContext() *context {
 // we`ll register noRoute or noMethod handle for this
 // otherwise, we cannot be verified for noRoute/noMethod
 func (c *Core) Use(middleware ...HandlerFunc) {
-	c.router.Use(middleware...)
+	c.Router.Use(middleware...)
 	c.rebuild404Handlers()
 	c.rebuild405Handlers()
 
