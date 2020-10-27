@@ -38,3 +38,12 @@ func TestDownload(t *testing.T)  {
 	})
 	y.Run(":9999")
 }
+
+func TestStatic(t *testing.T)  {
+	y := New()
+	y.Static("/front", "dist")
+	y.GET("/", func(c Context) error {
+		return c.HTMLTml(http.StatusOK, "./dist/index.html")
+	})
+	y.Run(":9999")
+}

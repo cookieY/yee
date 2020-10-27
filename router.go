@@ -144,10 +144,11 @@ func (r *Router) createDistHandler(relativePath string, fs http.FileSystem) Hand
 		if err2 != nil {
 			c.Status(http.StatusNotFound)
 			c.Reset()
-		} else {
-			_ = f.Close()
-			fileServer.ServeHTTP(c.Response(), c.Request())
 		}
+		if f != nil {
+			_ = f.Close()
+		}
+		fileServer.ServeHTTP(c.Response(), c.Request())
 		return
 	}
 }
