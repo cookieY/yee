@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"github.com/cookieY/yee"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -34,7 +33,6 @@ func TestCors(t *testing.T) {
 		req := httptest.NewRequest(http.MethodOptions, "/ok", nil)
 		rec := httptest.NewRecorder()
 		y.ServeHTTP(rec, req)
-		fmt.Println(rec.Body.String())
 		assert := assert.New(t)
 		assert.Equal(http.MethodGet, rec.Header().Get(yee.HeaderAccessControlAllowMethods))
 		assert.Equal("Test", rec.Header().Get(yee.HeaderAccessControlAllowHeaders))

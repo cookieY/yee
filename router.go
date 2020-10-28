@@ -135,6 +135,17 @@ func (r *Router) Static(relativePath, root string) {
 
 }
 
+func (r *Router) Packr(relativePath string, fs http.FileSystem) {
+	if strings.Contains(relativePath, ":") || strings.Contains(relativePath, "*") {
+		panic("URL path cannot be used when serving a static folder")
+	}
+	handler := r.createDistHandler(relativePath, fs)
+	url := path.Join(relativePath, "/*filepath")
+	r.GET(url, handler)
+	r.HEAD(url, handler)
+
+}
+
 func (r *Router) createDistHandler(relativePath string, fs http.FileSystem) HandlerFunc {
 	absolutePath := r.calculateAbsolutePath(relativePath)
 	fileServer := http.StripPrefix(absolutePath, http.FileServer(fs))
