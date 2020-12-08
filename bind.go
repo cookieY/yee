@@ -30,7 +30,7 @@ func (b *DefaultBinder) Bind(i interface{}, c Context) (err error) {
 
 	req := c.Request()
 
-	if err = b.bindData(i, c.QueryParams(), "query"); err != nil {
+	if err = b.bindData(i, c.QueryParams(), "json"); err != nil {
 		return c.ServerError(http.StatusBadRequest, err.Error())
 	}
 	if req.ContentLength == 0 {
@@ -76,7 +76,6 @@ func (b *DefaultBinder) bindData(ptr interface{}, data map[string][]string, tag 
 	}
 	typ := reflect.TypeOf(ptr).Elem()
 	val := reflect.ValueOf(ptr).Elem()
-
 	// Map
 	if typ.Kind() == reflect.Map {
 		for k, v := range data {
@@ -89,7 +88,6 @@ func (b *DefaultBinder) bindData(ptr interface{}, data map[string][]string, tag 
 	if typ.Kind() != reflect.Struct {
 		return errors.New("binding element must be a struct")
 	}
-
 	for i := 0; i < typ.NumField(); i++ {
 		typeField := typ.Field(i)
 		structField := val.Field(i)
@@ -98,7 +96,6 @@ func (b *DefaultBinder) bindData(ptr interface{}, data map[string][]string, tag 
 		}
 		structFieldKind := structField.Kind()
 		inputFieldName := typeField.Tag.Get(tag)
-
 		if inputFieldName == "" {
 			inputFieldName = typeField.Name
 			// If tag is nil, we inspect if the field is a struct.
