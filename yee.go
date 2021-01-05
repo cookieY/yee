@@ -55,7 +55,12 @@ const banner = `
 
 // New create a core and perform a series of initializations
 func New() *Core {
+	core := C()
+	core.l.producer.Printf(banner, core.l.producer.Green(version), core.l.producer.Red(title), core.l.producer.Cyan(creator))
+	return core
+}
 
+func C() *Core {
 	router := &Router{
 		handlers: nil,
 		root:     true,
@@ -74,7 +79,6 @@ func New() *Core {
 	core.pool.New = func() interface{} {
 		return core.allocateContext()
 	}
-	core.l.producer.Printf(banner, core.l.producer.Green(version), core.l.producer.Red(title), core.l.producer.Cyan(creator))
 	return core
 }
 

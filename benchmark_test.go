@@ -383,19 +383,19 @@ func benchmarkRoutes(b *testing.B, router http.Handler, routes []*Route) {
 }
 
 func BenchmarkYeeParseAPI(b *testing.B) {
-	e := New()
+	e := C()
 	loadYeeRoutes(e, parseAPI)
 	benchmarkRoutes(b, e, parseAPI)
 }
 
 func BenchmarkYeeGplusAPI(b *testing.B) {
-	e := New()
+	e := C()
 	loadYeeRoutes(e, gplusAPI)
 	benchmarkRoutes(b, e, gplusAPI)
 }
 
 func BenchmarkYeeGitHubAPI(b *testing.B) {
-	e := New()
+	e := C()
 	loadYeeRoutes(e, githubAPI)
 	benchmarkRoutes(b, e, githubAPI)
 }
