@@ -102,7 +102,7 @@ func (c *context) Next() {
 	s := len(c.handlers)
 	for ; c.index < s; c.index++ {
 		if err := c.handlers[c.index](c); err != nil {
-			c.engine.l.producer.Println(c.engine.l.producer.Red(err.Error()))
+			_ = c.ServerError(http.StatusBadRequest, err.Error())
 		}
 		if c.w.Written() {
 			break
