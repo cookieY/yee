@@ -39,7 +39,7 @@ type Core struct {
 	crypt                  *AesEncrypt
 }
 
-const version = "yee v0.1.9"
+const version = "yee v0.2.0"
 
 const creator = "Creator: Henry Yee"
 const title = "-----Easier and Faster-----"
