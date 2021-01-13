@@ -38,3 +38,16 @@ func TestCors(t *testing.T) {
 		assert.Equal("Test", rec.Header().Get(yee.HeaderAccessControlAllowHeaders))
 	})
 }
+
+func TestEncryptServer(t *testing.T) {
+	e := yee.New()
+	e.Use(Cors())
+	e.POST("/encrypt", func(c yee.Context) (err error) {
+		u := new(user)
+		if err := c.Bind(u); err != nil {
+			return err
+		}
+		return c.JSON(http.StatusOK, u)
+	})
+	e.Run(":9000")
+}

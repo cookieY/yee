@@ -28,7 +28,7 @@ func TestMultiMiddle(t *testing.T) {
 }
 
 func TestMultiGroup(t *testing.T) {
-	y := yee.New()
+	y := yee.C()
 	r := y.Group("/", Cors(), CustomerMiddleware())
 	r.GET("/test", func(context yee.Context) error {
 		return context.String(http.StatusOK, "is_ok")

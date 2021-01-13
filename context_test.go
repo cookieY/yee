@@ -31,6 +31,16 @@ func TestContextJSON(t *testing.T) {
 	y.ServeHTTP(rec, req)
 	assert.Equal(t, testData+"\n", rec.Body.String())
 }
+func TestContextForward(t *testing.T) {
+	y := New()
+	y.POST("/", func(c Context) (err error) {
+		return c.JSON(http.StatusOK, c.RemoteIP())
+	})
+	req := httptest.NewRequest(http.MethodPost, "/", nil)
+	req.Header.Set(HeaderXForwardedFor,"<img> ")
+	rec := httptest.NewRecorder()
+	y.ServeHTTP(rec, req)
+}
 
 func BenchmarkAllocJSON(b *testing.B) {
 	y := New()

@@ -1,12 +1,13 @@
 package yee
 
 import (
+	"bytes"
 	"encoding"
 	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"net/http"
+	"io/ioutil"
 	"reflect"
 	"strconv"
 	"strings"
@@ -30,12 +31,23 @@ func (b *DefaultBinder) Bind(i interface{}, c Context) (err error) {
 
 	req := c.Request()
 
-	if err = b.bindData(i, c.QueryParams(), "json"); err != nil {
-		return c.ServerError(http.StatusBadRequest, err.Error())
+	if c.Encrypt() != nil {
+		buf := new(bytes.Buffer)
+		if _, err = buf.ReadFrom(req.Body); err != nil {
+			c.Logger().Error(err.Error())
+		}
+		r := c.Encrypt().DePwdCode(buf.String())
+		req.Body = ioutil.NopCloser(strings.NewReader(r))
 	}
+
+	if err = b.bindData(i, c.QueryParams(), "json"); err != nil {
+		return err
+	}
+
 	if req.ContentLength == 0 {
 		return
 	}
+
 	ctype := req.Header.Get(HeaderContentType)
 	switch {
 	case strings.HasPrefix(ctype, MIMEApplicationJSON):
@@ -56,6 +68,8 @@ func (b *DefaultBinder) Bind(i interface{}, c Context) (err error) {
 			}
 			return err
 		}
+	case strings.HasPrefix(ctype, MIMEOctetStream), strings.HasPrefix(ctype, MIMEApplicationProtobuf):
+
 	case strings.HasPrefix(ctype, MIMEApplicationForm), strings.HasPrefix(ctype, MIMEMultipartForm):
 		params, err := c.FormParams()
 		if err != nil {

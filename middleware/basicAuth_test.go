@@ -12,8 +12,8 @@ import (
 )
 
 type user struct {
-	Username string
-	Password string
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 func validator(auth []byte) (bool, error) {

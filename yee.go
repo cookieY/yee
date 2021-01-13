@@ -36,6 +36,7 @@ type Core struct {
 	RedirectTrailingSlash  bool
 	RedirectFixedPath      bool
 	Banner                 bool
+	crypt                  *AesEncrypt
 }
 
 const version = "yee v0.1.9"
@@ -85,6 +86,14 @@ func C() *Core {
 // SetLogLevel define custom log level
 func (c *Core) SetLogLevel(l uint8) {
 	c.l.SetLevel(l)
+}
+
+func (c *Core) Encrypt(key string) *Core {
+	c.crypt = &AesEncrypt{
+		Key: key,
+		Iv:  key,
+	}
+	return c
 }
 
 func (c *Core) allocateContext() *context {
