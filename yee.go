@@ -36,10 +36,9 @@ type Core struct {
 	RedirectTrailingSlash  bool
 	RedirectFixedPath      bool
 	Banner                 bool
-	crypt                  *AesEncrypt
 }
 
-const version = "yee v0.2.0"
+const version = "yee v0.2.1"
 
 const creator = "Creator: Henry Yee"
 const title = "-----Easier and Faster-----"
@@ -86,14 +85,6 @@ func C() *Core {
 // SetLogLevel define custom log level
 func (c *Core) SetLogLevel(l uint8) {
 	c.l.SetLevel(l)
-}
-
-func (c *Core) Encrypt(key string) *Core {
-	c.crypt = &AesEncrypt{
-		Key: key,
-		Iv:  key,
-	}
-	return c
 }
 
 func (c *Core) allocateContext() *context {
@@ -217,7 +208,7 @@ func (c *Core) handleHTTPRequest(context *context) {
 	// But in general, we do not register an OPTIONS handle,
 	// So this may cause some middleware errors.
 	if httpMethod == http.MethodOptions {
-		serveError(context, 200, []byte("preflight resource"))
+		serveError(context, http.StatusNoContent, nil)
 	} else {
 		serveError(context, http.StatusNotFound, []byte("404 NOT FOUND"))
 	}

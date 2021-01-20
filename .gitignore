@@ -9,7 +9,7 @@ dist
 *.test
 testing/h5
 .idea
-
+.sum
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 

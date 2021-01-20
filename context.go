@@ -25,7 +25,6 @@ type Context interface {
 	HTML(code int, html string) (err error)
 	JSON(code int, i interface{}) error
 	String(code int, s string) error
-	ENCRYPT(code int, i interface{}) (err error)
 	Status(code int)
 	QueryParam(name string) string
 	QueryString() string
@@ -55,7 +54,6 @@ type Context interface {
 	RemoteIP() string
 	Logger() Logger
 	Reset()
-	Encrypt() *AesEncrypt
 }
 
 type context struct {
@@ -75,10 +73,6 @@ type context struct {
 	store     map[string]interface{}
 	lock      sync.RWMutex
 	noRewrite bool
-}
-
-func (c *context) Encrypt() *AesEncrypt {
-	return c.engine.crypt
 }
 
 func (c *context) Reset() {
@@ -107,9 +101,7 @@ func (c *context) Next() {
 	c.index++
 	s := len(c.handlers)
 	for ; c.index < s; c.index++ {
-		if err := c.handlers[c.index](c); err != nil {
-			_ = c.ServerError(http.StatusBadRequest, err.Error())
-		}
+		_ = c.handlers[c.index](c)
 		if c.w.Written() {
 			break
 		}
@@ -204,24 +196,12 @@ func (c *context) Blob(code int, contentType string, b []byte) (err error) {
 
 func (c *context) JSON(code int, i interface{}) (err error) {
 	if !c.writermem.Written() {
-		if c.engine.crypt != nil {
-			return c.ENCRYPT(code, i)
-		}
 		enc := json.NewEncoder(c.w)
 		c.writeContentType(MIMEApplicationJSONCharsetUTF8)
 		c.w.WriteHeader(code)
 		return enc.Encode(i)
 	}
 	return
-}
-
-func (c *context) ENCRYPT(code int, i interface{}) (err error) {
-	if c.engine.crypt != nil {
-		newValue, _ := json.Marshal(i)
-		v1 := c.Encrypt().EnPwdCode(string(newValue))
-		return c.Blob(code, MIMETextPlainCharsetUTF8, []byte(v1))
-	}
-	return err
 }
 
 func (c *context) String(code int, s string) error {

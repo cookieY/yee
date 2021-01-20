@@ -1,13 +1,11 @@
 package yee
 
 import (
-	"bytes"
 	"encoding"
 	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"reflect"
 	"strconv"
 	"strings"
@@ -30,15 +28,6 @@ type (
 func (b *DefaultBinder) Bind(i interface{}, c Context) (err error) {
 
 	req := c.Request()
-
-	if c.Encrypt() != nil {
-		buf := new(bytes.Buffer)
-		if _, err = buf.ReadFrom(req.Body); err != nil {
-			c.Logger().Error(err.Error())
-		}
-		r := c.Encrypt().DePwdCode(buf.String())
-		req.Body = ioutil.NopCloser(strings.NewReader(r))
-	}
 
 	if err = b.bindData(i, c.QueryParams(), "json"); err != nil {
 		return err

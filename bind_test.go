@@ -1,10 +1,8 @@
 package yee
 
 import (
-	"encoding/json"
 	"github.com/stretchr/testify/assert"
 	"io"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -56,7 +54,6 @@ func TestDefaultBinder_Bind(t *testing.T) {
 
 func TestBindEncryptOkay(t *testing.T) {
 	e := C()
-	e.Encrypt("hgfedcba87654321")
 	e.POST("/", func(c Context) (err error) {
 		u := new(user)
 		if err := c.Bind(u); err != nil {
@@ -68,33 +65,6 @@ func TestBindEncryptOkay(t *testing.T) {
 	req.Header.Set("Content-Type", MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	e.ServeHTTP(rec, req)
-}
-
-func TestBindDecryptOkay(t *testing.T)  {
-	e := C()
-	e.Encrypt("hgfedcba87654321")
-	e.POST("/encrypt", func(c Context) (err error) {
-		u := new(user)
-		if err := c.Bind(u); err != nil {
-			return err
-		}
-		return c.ENCRYPT(http.StatusOK, u)
-	})
-	aesEnc := NewEnc()
-	aesEnc.Iv = `hgfedcba87654321`
-	aesEnc.Key = `hgfedcba87654321`
-	source := `{"username": "henry","age":24,"password":"123123"}`
-	resource, _ := aesEnc.Encrypt(source)
-	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(resource)))
-	req.Header.Set("Content-Type", MIMEApplicationJSON)
-	rec := httptest.NewRecorder()
-	e.ServeHTTP(rec, req)
-	v, _ := decryptAES2(rec.Body.String(), []byte("hgfedcba87654321"))
-	u := new(user)
-	if err := json.Unmarshal(v, u); err != nil {
-		log.Fatal(err.Error())
-	}
-	assert.Equal(t, "henry",u.Username)
 }
 
 func TestDefaultBinder_Params_Bind(t *testing.T) {
