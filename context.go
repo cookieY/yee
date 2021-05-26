@@ -25,24 +25,25 @@ type Context interface {
 	HTML(code int, html string) (err error)
 	JSON(code int, i interface{}) error
 	String(code int, s string) error
+	FormValue(name string) string
+	FormParams() (url.Values, error)
+	FormFile(name string) (*multipart.FileHeader, error)
+	File(file string) error
 	Status(code int)
 	QueryParam(name string) string
 	QueryString() string
 	SetHeader(key string, value string)
 	AddHeader(key string, value string)
 	GetHeader(key string) string
-	FormValue(name string) string
-	FormParams() (url.Values, error)
-	FormFile(name string) (*multipart.FileHeader, error)
-	File(file string) error
 	MultipartForm() (*multipart.Form, error)
 	Redirect(code int, uri string) error
 	Params(name string) string
 	RequestURI() string
 	Scheme() string
 	IsTLS() bool
+	IsWebsocket() bool
 	Next()
-	HTMLTml(code int, tml string) (err error)
+	HTMLTpl(code int, tml string) (err error)
 	QueryParams() map[string][]string
 	Bind(i interface{}) error
 	Cookie(name string) (*http.Cookie, error)
@@ -171,7 +172,7 @@ func (c *context) HTML(code int, html string) (err error) {
 	return c.HTMLBlob(code, []byte(html))
 }
 
-func (c *context) HTMLTml(code int, tml string) (err error) {
+func (c *context) HTMLTpl(code int, tml string) (err error) {
 	s, e := ioutil.ReadFile(tml)
 	if e != nil {
 		panic(e)
@@ -204,6 +205,22 @@ func (c *context) JSON(code int, i interface{}) (err error) {
 	return
 }
 
+func (c *context) JSONP(code int, fn string, i interface{}) error {
+	enc := json.NewEncoder(c.w)
+	c.writeContentType(MIMEApplicationJavaScriptCharsetUTF8)
+	c.w.WriteHeader(code)
+	if _, err := c.w.Write([]byte(fn + "(")); err != nil {
+		return err
+	}
+	if err := enc.Encode(i); err != nil {
+		return err
+	}
+	if _, err := c.w.Write([]byte(");")); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (c *context) String(code int, s string) error {
 	return c.Blob(code, MIMETextPlainCharsetUTF8, []byte(s))
 }
@@ -232,19 +249,6 @@ func (c *context) Params(name string) string {
 	}
 	return ""
 }
-
-func (c *context) Cookie(name string) (*http.Cookie, error) {
-	return c.r.Cookie(name)
-}
-
-func (c *context) SetCookie(cookie *http.Cookie) {
-	http.SetCookie(c.w, cookie)
-}
-
-func (c *context) Cookies() []*http.Cookie {
-	return c.r.Cookies()
-}
-
 func (c *context) QueryParams() map[string][]string {
 	return c.r.URL.Query()
 }
@@ -311,6 +315,18 @@ func (c *context) MultipartForm() (*multipart.Form, error) {
 	return c.r.MultipartForm, err
 }
 
+func (c *context) Cookie(name string) (*http.Cookie, error) {
+	return c.r.Cookie(name)
+}
+
+func (c *context) SetCookie(cookie *http.Cookie) {
+	http.SetCookie(c.w, cookie)
+}
+
+func (c *context) Cookies() []*http.Cookie {
+	return c.r.Cookies()
+}
+
 func (c *context) RequestURI() string {
 	return c.r.RequestURI
 }
@@ -334,6 +350,14 @@ func (c *context) Scheme() string {
 
 func (c *context) IsTLS() bool {
 	return c.r.TLS != nil
+}
+
+func (c *context) IsWebsocket() bool {
+	if strings.Contains(strings.ToLower(c.r.Header.Get(HeaderConnection)), "upgrade") &&
+		strings.EqualFold(c.r.Header.Get(HeaderUpgrade), "websocket") {
+		return true
+	}
+	return false
 }
 
 func (c *context) Redirect(code int, uri string) error {

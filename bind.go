@@ -48,7 +48,10 @@ func (b *DefaultBinder) Bind(i interface{}, c Context) (err error) {
 			}
 			return err
 		}
-	case strings.HasPrefix(ctype, MIMEApplicationXML), strings.HasPrefix(ctype, MIMETextXML):
+	case strings.HasPrefix(ctype, MIMEApplicationXML),
+		strings.HasPrefix(ctype, MIMETextXML),
+		strings.HasPrefix(ctype, MIMETextXMLCharsetUTF8),
+		strings.HasPrefix(ctype, MIMEApplicationXMLCharsetUTF8):
 		if err = xml.NewDecoder(req.Body).Decode(i); err != nil {
 			if ute, ok := err.(*xml.UnsupportedTypeError); ok {
 				return errors.New(fmt.Sprintf("Unsupported type error: type=%v, error=%v", ute.Type, ute.Error()))

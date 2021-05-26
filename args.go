@@ -19,6 +19,7 @@ const (
 	HeaderLastModified        = "Last-Modified"
 	HeaderLocation            = "Location"
 	HeaderUpgrade             = "Upgrade"
+	HeaderConnection          = "Connection"
 	HeaderVary                = "Vary"
 	HeaderWWWAuthenticate     = "WWW-Authenticate"
 	HeaderXForwardedFor       = "X-Forwarded-For"
@@ -93,6 +94,6 @@ var (
 	ErrRendererNotRegistered  = errors.New("renderer not registered")
 	ErrInvalidRedirectCode    = errors.New("invalid redirect status code")
 	ErrCookieNotFound         = errors.New("cookie not found")
-	ErrNotFoundHandler         = errors.New("404 NOT FOUND")
+	ErrNotFoundHandler        = errors.New("404 NOT FOUND")
 	ErrInvalidCertOrKeyType   = errors.New("invalid cert or key type, must be string or []byte")
 )

@@ -37,6 +37,9 @@ func GzipWithConfig(config GzipConfig) yee.HandlerFunc {
 	}
 
 	return func(c yee.Context) (err error) {
+		if c.IsWebsocket() {
+			return
+		}
 		res := c.Response()
 		res.Header().Add(yee.HeaderVary, yee.HeaderAcceptEncoding)
 		if strings.Contains(c.Request().Header.Get(yee.HeaderAcceptEncoding), "gzip") {
