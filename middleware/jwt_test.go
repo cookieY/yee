@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/cookieY/yee"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"

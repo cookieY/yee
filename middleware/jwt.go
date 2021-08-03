@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/cookieY/yee"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt"
 )
 
 // JwtConfig defines the config of JWT middleware
