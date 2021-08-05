@@ -29,6 +29,7 @@ type Context interface {
 	FormParams() (url.Values, error)
 	FormFile(name string) (*multipart.FileHeader, error)
 	File(file string) error
+	Blob(code int, contentType string, b []byte) (err error)
 	Status(code int)
 	QueryParam(name string) string
 	QueryString() string
