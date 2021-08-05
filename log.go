@@ -36,6 +36,11 @@ type Logger interface {
 	Warn(msg string)
 	Info(msg string)
 	Debug(msg string)
+	Criticalf(error string, msg ...interface{})
+	Errorf(error string, msg ...interface{})
+	Warnf(error string, msg ...interface{})
+	Infof(error string, msg ...interface{})
+	Debugf(error string, msg ...interface{})
 	SetLevel(level uint8)
 }
 
@@ -102,8 +107,20 @@ func (l *logger) Critical(msg string) {
 	}
 }
 
+func (l *logger) Criticalf(error string, msg ...interface{}) {
+	if msg, ok := l.logWrite(fmt.Sprintf(error, msg...), Critical); ok {
+		l.print(l.producer.Red(msg))
+	}
+}
+
 func (l *logger) Error(msg string) {
 	if msg, ok := l.logWrite(msg, Error); ok {
+		l.print(l.producer.Magenta(msg))
+	}
+}
+
+func (l *logger) Errorf(error string, msg ...interface{}) {
+	if msg, ok := l.logWrite(fmt.Sprintf(error, msg...), Error); ok {
 		l.print(l.producer.Magenta(msg))
 	}
 }
@@ -114,9 +131,27 @@ func (l *logger) Warn(msg string) {
 	}
 }
 
+func (l *logger) Warnf(error string, msg ...interface{}) {
+	if msg, ok := l.logWrite(fmt.Sprintf(error, msg...), Warning); ok {
+		l.print(l.producer.Yellow(msg))
+	}
+}
+
 func (l *logger) Info(msg string) {
 	if msg, ok := l.logWrite(msg, Info); ok {
 		l.print(l.producer.Blue(msg))
+	}
+}
+
+func (l *logger) Infof(error string, msg ...interface{}) {
+	if msg, ok := l.logWrite(fmt.Sprintf(error, msg...), Info); ok {
+		l.print(l.producer.Blue(msg))
+	}
+}
+
+func (l *logger) Debugf(error string, msg ...interface{}) {
+	if msg, ok := l.logWrite(fmt.Sprintf(error, msg...), Debug); ok {
+		l.print(l.producer.Cyan(msg))
 	}
 }
 

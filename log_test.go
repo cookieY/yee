@@ -10,7 +10,7 @@ import (
 func TestLogger_LogWrite(t *testing.T) {
 
 	y := New()
-	y.SetLogLevel(3)
+	y.SetLogLevel(7)
 
 	y.POST("/hello/k/:b", func(c Context) error {
 		c.Logger().Critical("critical")
@@ -18,6 +18,11 @@ func TestLogger_LogWrite(t *testing.T) {
 		c.Logger().Warn("warn")
 		c.Logger().Info("info")
 		c.Logger().Debug("debug")
+		c.Logger().Criticalf("test:%v",123)
+		c.Logger().Errorf("test:%v",123)
+		c.Logger().Warnf("test:%v",123)
+		c.Logger().Infof("test:%v",123)
+		c.Logger().Debugf("test:%v",123)
 		return c.String(http.StatusOK, c.Params("b"))
 	})
 	t.Run("http_get", func(t *testing.T) {

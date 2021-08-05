@@ -43,7 +43,7 @@ func TestStatic(t *testing.T)  {
 	y := New()
 	y.Static("/front", "dist")
 	y.GET("/", func(c Context) error {
-		return c.HTMLTml(http.StatusOK, "./dist/index.html")
+		return c.HTMLTpl(http.StatusOK, "./dist/index.html")
 	})
 	y.Run(":9999")
 }
