@@ -77,6 +77,11 @@ func JWTWithConfig(config JwtConfig) yee.HandlerFunc {
 	extractor := jwtFromHeader(parts[1], config.AuthScheme)
 
 	return func(c yee.Context) (err error) {
+		// cause upgrade websocket  will clear custom header
+		// when header add jwt bearer that panic
+		if c.IsWebsocket() {
+			return
+		}
 		auth, err := extractor(c)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, err.Error())

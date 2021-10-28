@@ -400,6 +400,18 @@ func BenchmarkYeeGitHubAPI(b *testing.B) {
 	benchmarkRoutes(b, e, githubAPI)
 }
 
+func BenchmarkYeeStatic(b *testing.B) {
+	e := C()
+	e.Static("/front", "color")
+	b.ReportAllocs()
+	r := httptest.NewRequest("GET", "/front/color.go", nil)
+	w := httptest.NewRecorder()
+	b.SetBytes(1024 * 1024)
+	for i := 0; i < b.N; i++ {
+		e.ServeHTTP(w, r)
+	}
+}
+
 func Benchmark(b *testing.B) {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	b.Run("BenchmarkYeeGplusAPI", BenchmarkYeeGplusAPI)

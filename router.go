@@ -1,6 +1,7 @@
 package yee
 
 import (
+	"golang.org/x/exp/mmap"
 	"net/http"
 	"path"
 	"strings"
@@ -151,7 +152,9 @@ func (r *Router) createDistHandler(relativePath string, fs http.FileSystem) Hand
 	fileServer := http.StripPrefix(absolutePath, http.FileServer(fs))
 	return func(c Context) (err error) {
 		file := c.Params("filepath")
-		f, err2 := fs.Open(file)
+		// Mmap provides a way to memory-map,
+		// This improves reading efficiency when a large number of static file reads are performed
+		f, err2 := mmap.Open(file)
 		if err2 != nil {
 			c.Status(http.StatusNotFound)
 			c.Reset()

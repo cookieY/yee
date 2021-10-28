@@ -90,6 +90,15 @@ type testCase struct {
 	expect string
 }
 
+func TestRouter_Static(t *testing.T) {
+	y := New()
+	y.Static("/front","color")
+	req := httptest.NewRequest(http.MethodGet, "/front/color.go", nil)
+	rec := httptest.NewRecorder()
+	y.ServeHTTP(rec, req)
+	fmt.Println(rec.Body.String())
+}
+
 func TestRouterMixin(t *testing.T) {
 	y := New()
 	y.GET("/pay", func(c Context) error {
