@@ -6,6 +6,8 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"github.com/golang/protobuf/proto"
+	"io/ioutil"
 	"reflect"
 	"strconv"
 	"strings"
@@ -39,6 +41,14 @@ func (b *DefaultBinder) Bind(i interface{}, c Context) (err error) {
 
 	ctype := req.Header.Get(HeaderContentType)
 	switch {
+	case strings.HasPrefix(ctype, MIMEApplicationProtobuf):
+		buf, err := ioutil.ReadAll(req.Body)
+		if err != nil {
+			return err
+		}
+		if err := proto.Unmarshal(buf, i.(proto.Message)); err != nil {
+			return err
+		}
 	case strings.HasPrefix(ctype, MIMEApplicationJSON):
 		if err = json.NewDecoder(req.Body).Decode(i); err != nil {
 			if ute, ok := err.(*json.UnmarshalTypeError); ok {
@@ -60,7 +70,7 @@ func (b *DefaultBinder) Bind(i interface{}, c Context) (err error) {
 			}
 			return err
 		}
-	case strings.HasPrefix(ctype, MIMEOctetStream), strings.HasPrefix(ctype, MIMEApplicationProtobuf):
+	case strings.HasPrefix(ctype, MIMEOctetStream):
 
 	case strings.HasPrefix(ctype, MIMEApplicationForm), strings.HasPrefix(ctype, MIMEMultipartForm):
 		params, err := c.FormParams()

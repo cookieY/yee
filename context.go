@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/golang/protobuf/proto"
 	"io/ioutil"
 	"math"
 	"mime/multipart"
@@ -24,6 +25,7 @@ type Context interface {
 	Response() ResponseWriter
 	HTML(code int, html string) (err error)
 	JSON(code int, i interface{}) error
+	ProtoBuf(code int, i proto.Message) error
 	String(code int, s string) error
 	FormValue(name string) string
 	FormParams() (url.Values, error)
@@ -202,6 +204,21 @@ func (c *context) JSON(code int, i interface{}) (err error) {
 		c.writeContentType(MIMEApplicationJSONCharsetUTF8)
 		c.w.WriteHeader(code)
 		return enc.Encode(i)
+	}
+	return
+}
+
+func (c *context) ProtoBuf(code int, i proto.Message) (err error) {
+	if !c.writermem.Written() {
+		c.writeContentType(MIMEApplicationProtobuf)
+		c.w.WriteHeader(code)
+		b, err := proto.Marshal(i)
+		if err != nil {
+			return err
+		}
+		if _, err = c.w.Write(b); err != nil {
+			return err
+		}
 	}
 	return
 }

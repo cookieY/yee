@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/cookieY/yee/color"
+	"github.com/lucas-clemente/quic-go/http3"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 )
@@ -169,6 +170,12 @@ func (c *Core) RunH2C(addr string) {
 		Handler: h2c.NewHandler(c, s),
 	}
 	log.Fatal(h1s.ListenAndServe())
+}
+
+func (c *Core) RunH3(addr, ca, keyFile string) {
+	//if isTCP {
+	log.Fatal(http3.ListenAndServe(addr, ca, keyFile, c))
+	//log.Fatal(s.ListenAndServeTLS(ca, keyFile))
 }
 
 func (c *Core) handleHTTPRequest(context *context) {

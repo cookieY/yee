@@ -15,3 +15,5 @@ testing/h5
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+test/
+*.pem
