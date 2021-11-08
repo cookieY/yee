@@ -1,0 +1,11 @@
+syntax = "proto3";
+package host;
+option go_package = "./";
+
+message Svr {
+  string Name = 1;
+  string IP = 2;
+  string Project = 3;
+  string IDC = 4;
+  string Cloud = 5;
+}
