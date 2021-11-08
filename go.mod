@@ -11,8 +11,6 @@ require (
 	github.com/mattn/go-isatty v0.0.14
 	github.com/stretchr/testify v1.7.0
 	github.com/valyala/fasttemplate v1.1.0
-	golang.org/x/exp v0.0.0-20211025140241-8418b01e8c3b
 	golang.org/x/net v0.0.0-20210428140749-89ef3d95e781
-	google.golang.org/grpc v1.26.0
 	google.golang.org/protobuf v1.26.0
 )

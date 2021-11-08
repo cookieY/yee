@@ -2,15 +2,14 @@ package yee
 
 import (
 	"fmt"
-	"log"
-	"net/http"
-	"os"
-	"sync"
-
 	"github.com/cookieY/yee/color"
 	"github.com/lucas-clemente/quic-go/http3"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
+	"log"
+	"net/http"
+	"os"
+	"sync"
 )
 
 // HandlerFunc define handler of context
@@ -39,7 +38,7 @@ type Core struct {
 	Banner                 bool
 }
 
-const version = "yee v0.2.6"
+const version = "yee v0.2.7"
 
 const creator = "Creator: Henry Yee"
 const title = "-----Easier and Faster-----"

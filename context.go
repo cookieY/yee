@@ -104,10 +104,12 @@ func (c *context) reset() { // reset context members
 func (c *context) Next() {
 	c.index++
 	s := len(c.handlers)
-	for ; c.index < s; c.index++ {
-		_ = c.handlers[c.index](c)
-		if c.w.Written() {
-			break
+	if s > 0 {
+		for ; c.index < s; c.index++ {
+			_ = c.handlers[c.index](c)
+			if c.w.Written() {
+				break
+			}
 		}
 	}
 }
