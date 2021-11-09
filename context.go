@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/cookieY/yee/logger"
 	"github.com/golang/protobuf/proto"
 	"io/ioutil"
 	"math"
@@ -56,7 +57,7 @@ type Context interface {
 	Put(key string, values interface{})
 	ServerError(code int, defaultMessage string) error
 	RemoteIP() string
-	Logger() Logger
+	Logger() logger.Logger
 	Reset()
 }
 
@@ -114,7 +115,7 @@ func (c *context) Next() {
 	}
 }
 
-func (c *context) Logger() Logger {
+func (c *context) Logger() logger.Logger {
 	return c.engine.l
 }
 

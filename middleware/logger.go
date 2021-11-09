@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"fmt"
+	"github.com/cookieY/yee/logger"
 	"io"
 	"log"
 
@@ -46,7 +47,7 @@ func LoggerWithConfig(config LoggerConfig) yee.HandlerFunc {
 		log.Fatalf("unexpected error when parsing template: %s", err)
 	}
 
-	logger := yee.LogCreator()
+	logger := logger.LogCreator()
 
 	logger.SetLevel(config.Level)
 
