@@ -12,7 +12,7 @@ This is a framework for learning purposes. Refer to the code for Echo and Gin
 -   Group APIs
 -   Extensible middleware framework
 -   Define middleware at root, group or route level
--   Data binding for JSON, XML, Protocol Buffer3 and form payload
+-   Data binding for URI Query, JSON, XML, Protocol Buffer3 and form payload
 -   HTTP/2(H2C)/Http3(QUIC) support
 
 # Supported Go versions
