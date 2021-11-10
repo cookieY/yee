@@ -13,7 +13,7 @@ This is a framework for learning purposes. Refer to the code for Echo and Gin
 -   Extensible middleware framework
 -   Define middleware at root, group or route level
 -   Data binding for JSON, XML and form payload
--   HTTP/2(H2C) support
+-   HTTP/2(H2C)/Http3(QUIC) support
 
 # Supported Go versions
 
@@ -24,8 +24,20 @@ Yee is available as a Go module. You need to use Go 1.13 +
 #### Quick start
 
 ```go
- 	y := yee.New()
-
+	file, err := os.OpenFile("logrus.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	
+	if err != nil {
+	    return
+	}
+	
+	y := yee.New()
+	
+	y.SetLogLevel(logger.Warning)
+	
+	y.SetLogOut(file)
+	 
+	y.Use(Logger())
+	 
  	y.Static("/assets", "dist/assets")
 
 	y.GET("/", func(c yee.Context) (err error) {

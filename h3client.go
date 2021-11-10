@@ -3,17 +3,19 @@ package yee
 import (
 	"bytes"
 	"crypto/tls"
+	"io/ioutil"
+	"net/http"
+
+	"github.com/cookieY/yee/logger"
 	"github.com/golang/protobuf/proto"
 	"github.com/lucas-clemente/quic-go"
 	"github.com/lucas-clemente/quic-go/http3"
-	"io/ioutil"
-	"net/http"
 )
 
 type transport struct {
 	addr               string
 	insecureSkipVerify bool
-	logger             *logger
+	logger             logger.Logger
 	tripper            *http3.RoundTripper
 	c                  *http.Client
 }
@@ -33,7 +35,7 @@ func NewH3Client(c *CConfig) *transport {
 	return &transport{
 		addr:               c.Addr,
 		insecureSkipVerify: c.InsecureSkipVerify,
-		logger:             LogCreator(),
+		logger:             logger.LogCreator(),
 		c: &http.Client{
 			Transport: tripper,
 		},

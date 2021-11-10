@@ -1,0 +1,10 @@
+ [Critical] 2021-11-10 10:32:38 (/Users/henryyee/Yee/log_test.go:23) critical
+ [Error] 2021-11-10 10:32:38 (/Users/henryyee/Yee/log_test.go:24) error
+ [Warn] 2021-11-10 10:32:38 (/Users/henryyee/Yee/log_test.go:25) warn
+ [Info] 2021-11-10 10:32:38 (/Users/henryyee/Yee/log_test.go:26) info
+ [Debug] 2021-11-10 10:32:38 (/Users/henryyee/Yee/log_test.go:27) debug
+ [Critical] 2021-11-10 10:32:38 (/Users/henryyee/Yee/log_test.go:28) test:123
+ [Error] 2021-11-10 10:32:38 (/Users/henryyee/Yee/log_test.go:29) test:123
+ [Warn] 2021-11-10 10:32:38 (/Users/henryyee/Yee/log_test.go:30) test:123
+ [Info] 2021-11-10 10:32:38 (/Users/henryyee/Yee/log_test.go:31) test:123
+ [Debug] 2021-11-10 10:32:38 (/Users/henryyee/Yee/log_test.go:32) test:123

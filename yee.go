@@ -2,10 +2,11 @@ package yee
 
 import (
 	"fmt"
-	"github.com/cookieY/yee/color"
+	"github.com/cookieY/yee/logger"
 	"github.com/lucas-clemente/quic-go/http3"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -30,8 +31,8 @@ type Core struct {
 	allNoMethod            HandlersChain
 	noRoute                HandlersChain
 	noMethod               HandlersChain
-	l                      *logger
-	color                  *color.Color
+	l                      logger.Logger
+	color                  *logger.Color
 	bind                   DefaultBinder
 	RedirectTrailingSlash  bool
 	RedirectFixedPath      bool
@@ -56,7 +57,7 @@ const banner = `
 // New create a core and perform a series of initializations
 func New() *Core {
 	core := C()
-	core.l.producer.Printf(banner, core.l.producer.Green(version), core.l.producer.Red(title), core.l.producer.Cyan(creator))
+	core.l.Custom(fmt.Sprintf(banner, logger.Green(version), logger.Red(title), logger.Cyan(creator)))
 	return core
 }
 
@@ -70,7 +71,7 @@ func C() *Core {
 	core := &Core{
 		trees:  make(methodTrees, 0, 0),
 		Router: router,
-		l:      LogCreator(),
+		l:      logger.LogCreator(),
 		bind:   DefaultBinder{},
 	}
 
@@ -85,6 +86,10 @@ func C() *Core {
 // SetLogLevel define custom log level
 func (c *Core) SetLogLevel(l uint8) {
 	c.l.SetLevel(l)
+}
+
+func (c *Core) SetLogOut(out io.Writer) {
+	c.l.SetOut(out)
 }
 
 func (c *Core) allocateContext() *context {
