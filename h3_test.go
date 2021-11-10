@@ -44,3 +44,19 @@ func TestNewH3Client(t *testing.T) {
 	cs.Post(&pb.Svr{Project: "henry"}, rsp)
 	fmt.Println(rsp.Cloud)
 }
+
+func TestNewProtoc3(t *testing.T)  {
+	y := New()
+	y.SetLogLevel(5)
+	y.POST("/hello", func(c Context) (err error) {
+		u := new(pb.Svr)
+		if err := c.Bind(u); err != nil {
+			c.Logger().Error(err.Error())
+			return err
+		}
+		c.Logger().Debugf("svr get client data: %s",u.Project)
+		svr := pb.Svr{Cloud: "hi"}
+		return c.ProtoBuf(http.StatusOK, &svr)
+	})
+	y.Run(":9999")
+}

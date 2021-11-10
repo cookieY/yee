@@ -3,7 +3,6 @@ package yee
 import (
 	"bytes"
 	"crypto/tls"
-	"fmt"
 	"github.com/golang/protobuf/proto"
 	"github.com/lucas-clemente/quic-go"
 	"github.com/lucas-clemente/quic-go/http3"
@@ -48,7 +47,6 @@ func (t *transport) Post(payload proto.Message, recv proto.Message) {
 		t.logger.Critical(err.Error())
 		return
 	}
-	fmt.Println(t.addr)
 	rsp, err := t.c.Post(t.addr, MIMEApplicationProtobuf, bytes.NewReader(p))
 	if err != nil {
 		t.logger.Critical(err.Error())
