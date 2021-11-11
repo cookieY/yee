@@ -243,7 +243,7 @@ func (c *context) JSONP(code int, fn string, i interface{}) error {
 }
 
 func (c *context) String(code int, s string) error {
-	return c.Blob(code, MIMETextPlainCharsetUTF8, []byte(s))
+	return c.Blob(code, MIMETextPlainCharsetUTF8, StringToBytes(s))
 }
 
 func (c *context) Status(code int) {

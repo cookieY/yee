@@ -1,6 +1,7 @@
 package yee
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -31,6 +32,7 @@ func TestContextJSON(t *testing.T) {
 	y.ServeHTTP(rec, req)
 	assert.Equal(t, testData+"\n", rec.Body.String())
 }
+
 func TestContextForward(t *testing.T) {
 	y := New()
 	y.POST("/", func(c Context) (err error) {
@@ -40,6 +42,17 @@ func TestContextForward(t *testing.T) {
 	req.Header.Set(HeaderXForwardedFor,"<img> ")
 	rec := httptest.NewRecorder()
 	y.ServeHTTP(rec, req)
+}
+
+func TestContextString(t *testing.T) {
+	y := New()
+	y.POST("/", func(c Context) (err error) {
+		return c.String(http.StatusOK,"hello")
+	})
+	req := httptest.NewRequest(http.MethodPost, "/", nil)
+	rec := httptest.NewRecorder()
+	y.ServeHTTP(rec, req)
+	fmt.Println(rec.Body.String())
 }
 
 func BenchmarkAllocJSON(b *testing.B) {
