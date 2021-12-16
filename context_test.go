@@ -1,13 +1,12 @@
 package yee
 
 import (
-	"fmt"
+	"github.com/stretchr/testify/assert"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 var testData = `{"id":1,"name":"Jon Snow"}`
@@ -39,7 +38,7 @@ func TestContextForward(t *testing.T) {
 		return c.JSON(http.StatusOK, c.RemoteIP())
 	})
 	req := httptest.NewRequest(http.MethodPost, "/", nil)
-	req.Header.Set(HeaderXForwardedFor,"<img> ")
+	req.Header.Set(HeaderXForwardedFor, "<img> ")
 	rec := httptest.NewRecorder()
 	y.ServeHTTP(rec, req)
 }
@@ -47,12 +46,38 @@ func TestContextForward(t *testing.T) {
 func TestContextString(t *testing.T) {
 	y := New()
 	y.POST("/", func(c Context) (err error) {
-		return c.String(http.StatusOK,"hello")
+		return c.String(http.StatusOK, "hello")
 	})
 	req := httptest.NewRequest(http.MethodPost, "/", nil)
 	rec := httptest.NewRecorder()
 	y.ServeHTTP(rec, req)
-	fmt.Println(rec.Body.String())
+	assert.Equal(t, "hello", rec.Body.String())
+}
+
+func crashMiddleware() HandlerFunc {
+	return func(c Context) (err error) {
+		c.CrashWithStatus(http.StatusUnauthorized)
+		return
+	}
+}
+func sayMiddleware() HandlerFunc {
+	return func(c Context) (err error) {
+		log.Println("say")
+		return
+	}
+}
+
+func TestCrash(t *testing.T) {
+	y := New()
+	y.Use(crashMiddleware())
+	y.Use(sayMiddleware())
+	y.GET("/", func(c Context) (err error) {
+		return c.String(http.StatusOK, "hello")
+	})
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	rec := httptest.NewRecorder()
+	y.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnauthorized, rec.Body)
 }
 
 func BenchmarkAllocJSON(b *testing.B) {

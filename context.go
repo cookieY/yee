@@ -18,7 +18,7 @@ import (
 	"sync"
 )
 
-const abortIndex int8 = math.MaxInt8 / 2
+const crashIndex int = math.MaxInt8 / 2
 
 // Context is the default implementation  interface of context
 type Context interface {
@@ -59,6 +59,10 @@ type Context interface {
 	RemoteIP() string
 	Logger() logger.Logger
 	Reset()
+	Crash()
+	IsCrash() bool
+	CrashWithStatus(code int)
+	CrashWithJson(code int, json interface{})
 }
 
 type context struct {
@@ -144,6 +148,28 @@ func (c *context) Put(key string, values interface{}) {
 		c.store = make(map[string]interface{})
 	}
 	c.store[key] = values
+}
+
+func (c *context) Crash() {
+	c.index = crashIndex
+}
+
+func (c *context) IsCrash() bool {
+	return c.index >= crashIndex
+}
+
+func (c *context) CrashWithStatus(code int) {
+	c.Status(code)
+	c.w.WriteHeaderNow()
+	c.Crash()
+}
+
+func (c *context) CrashWithJson(code int, json interface{}) {
+	c.Crash()
+	err := c.JSON(code, json)
+	if err != nil {
+		return
+	}
 }
 
 func (c *context) Get(key string) interface{} {
