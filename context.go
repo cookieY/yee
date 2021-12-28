@@ -411,7 +411,7 @@ func (c *context) Redirect(code int, uri string) error {
 	if code < 300 || code > 308 {
 		return ErrInvalidRedirectCode
 	}
-	c.r.Header.Set(HeaderLocation, uri)
+	c.w.Header().Set(HeaderLocation, uri)
 	c.w.WriteHeader(code)
 	return nil
 }

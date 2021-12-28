@@ -80,6 +80,19 @@ func TestCrash(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, rec.Body)
 }
 
+func TestRedirect(t *testing.T) {
+	y := New()
+	y.GET("/", func(c Context) (err error) {
+		return c.Redirect(http.StatusMovedPermanently, "/get")
+	})
+	y.GET("/get", func(c Context) (err error) {
+		return c.String(http.StatusOK, "hello")
+	})
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	rec := httptest.NewRecorder()
+	y.ServeHTTP(rec, req)
+}
+
 func BenchmarkAllocJSON(b *testing.B) {
 	y := New()
 	y.POST("/", func(c Context) (err error) {

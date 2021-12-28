@@ -5,6 +5,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"embed"
 	"encoding/pem"
 	"math/big"
 	"net"
@@ -53,6 +54,21 @@ func TestStatic(t *testing.T) {
 	y.Static("/front", "dist")
 	y.GET("/", func(c Context) error {
 		return c.HTMLTpl(http.StatusOK, "./dist/index.html")
+	})
+	y.Run(":9999")
+}
+
+//go:embed dist/*
+var f embed.FS
+
+//go:embed dist/index.html
+var index string
+
+func TestPack(t *testing.T) {
+	y := New()
+	y.Pack("/front", f, "dist")
+	y.GET("/", func(c Context) error {
+		return c.HTML(http.StatusOK, index)
 	})
 	y.Run(":9999")
 }

@@ -1,6 +1,8 @@
 package yee
 
 import (
+	"embed"
+	"io/fs"
 	"net/http"
 	"path"
 	"strings"
@@ -128,31 +130,34 @@ func (r *Router) Static(relativePath, root string) {
 	if strings.Contains(relativePath, ":") || strings.Contains(relativePath, "*") {
 		panic("URL path cannot be used when serving a static folder")
 	}
-	handler := r.createDistHandler(relativePath, http.Dir(root))
+	handler := r.createDistHandler(relativePath, Dir(root, false))
 	url := path.Join(relativePath, "/*filepath")
 	r.GET(url, handler)
 	r.HEAD(url, handler)
-
 }
 
-func (r *Router) Packr(relativePath string, fs http.FileSystem) {
+func (r *Router) Pack(relativePath string, f embed.FS, root string) {
 	if strings.Contains(relativePath, ":") || strings.Contains(relativePath, "*") {
 		panic("URL path cannot be used when serving a static folder")
 	}
-	handler := r.createDistHandler(relativePath, fs)
+	fsys, err := fs.Sub(f, root)
+	if err != nil {
+		panic(err)
+	}
+	handler := r.createDistHandler(relativePath, http.FS(fsys))
 	url := path.Join(relativePath, "/*filepath")
 	r.GET(url, handler)
 	r.HEAD(url, handler)
-
 }
 
 func (r *Router) createDistHandler(relativePath string, fs http.FileSystem) HandlerFunc {
 	absolutePath := r.calculateAbsolutePath(relativePath)
 	fileServer := http.StripPrefix(absolutePath, http.FileServer(fs))
 	return func(c Context) (err error) {
+		if _, noListing := fs.(*onlyFilesFS); noListing {
+			c.Response().WriteHeader(http.StatusNotFound)
+		}
 		file := c.Params("filepath")
-		// Mmap provides a way to memory-map,
-		// This improves reading efficiency when a large number of static file reads are performed
 		f, err2 := fs.Open(file)
 		if err2 != nil {
 			c.Status(http.StatusNotFound)
