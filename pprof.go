@@ -10,7 +10,7 @@ const DefaultPrefix = "/debug/pprof"
 func getPrefix(prefixOptions string) string {
 	prefix := DefaultPrefix
 	if len(prefixOptions) > 1 {
-		prefix += prefixOptions
+		prefix = "/debug" + prefixOptions
 	}
 	return prefix
 }
