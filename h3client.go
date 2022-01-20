@@ -43,6 +43,14 @@ func NewH3Client(c *CConfig) *transport {
 	}
 }
 
+func (t *transport) Get(url string) (*http.Response, error) {
+	resp, err := t.c.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
 func (t *transport) Post(payload proto.Message, recv proto.Message) {
 	p, err := proto.Marshal(payload)
 	if err != nil {
