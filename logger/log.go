@@ -59,6 +59,8 @@ func LogCreator() Logger {
 	return l
 }
 
+var DefaultLogger = LogCreator()
+
 func (l *logger) SetOut(out io.Writer) {
 	l.Lock()
 	defer l.Unlock()
