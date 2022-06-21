@@ -23,7 +23,9 @@ const crashIndex int = math.MaxInt8 / 2
 // Context is the default implementation  interface of context
 type Context interface {
 	Request() *http.Request
+	SetRequest(r *http.Request)
 	Response() ResponseWriter
+	SetResponse(w ResponseWriter)
 	HTML(code int, html string) (err error)
 	JSON(code int, i interface{}) error
 	ProtoBuf(code int, i proto.Message) error
@@ -63,6 +65,7 @@ type Context interface {
 	IsCrash() bool
 	CrashWithStatus(code int)
 	CrashWithJson(code int, json interface{})
+	Path() string
 }
 
 type context struct {
@@ -82,6 +85,10 @@ type context struct {
 	store     map[string]interface{}
 	lock      sync.RWMutex
 	noRewrite bool
+}
+
+func (c *context) Path() string {
+	return c.path
 }
 
 func (c *context) Reset() {
@@ -182,8 +189,16 @@ func (c *context) Request() *http.Request {
 	return c.r
 }
 
+func (c *context) SetRequest(r *http.Request) {
+	c.r = r
+}
+
 func (c *context) Response() ResponseWriter {
 	return c.w
+}
+
+func (c *context) SetResponse(w ResponseWriter) {
+	c.w = w
 }
 
 func (c *context) RemoteIP() string {
