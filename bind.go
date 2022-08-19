@@ -30,7 +30,6 @@ type (
 func (b *DefaultBinder) Bind(i interface{}, c Context) (err error) {
 
 	req := c.Request()
-
 	if err = b.bindData(i, c.QueryParams(), "json"); err != nil {
 		return err
 	}
