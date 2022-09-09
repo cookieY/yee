@@ -66,6 +66,7 @@ type Context interface {
 	CrashWithStatus(code int)
 	CrashWithJson(code int, json interface{})
 	Path() string
+	Abort()
 }
 
 type context struct {
@@ -85,6 +86,7 @@ type context struct {
 	store     map[string]interface{}
 	lock      sync.RWMutex
 	noRewrite bool
+	abort     bool
 }
 
 func (c *context) Path() string {
@@ -94,6 +96,10 @@ func (c *context) Path() string {
 func (c *context) Reset() {
 	c.index = -1
 	c.handlers = c.engine.noRoute
+}
+
+func (c *context) Abort() {
+	c.abort = true
 }
 
 func (c *context) Bind(i interface{}) error {
@@ -119,6 +125,9 @@ func (c *context) Next() {
 	if s > 0 {
 		for ; c.index < s; c.index++ {
 			_ = c.handlers[c.index](c)
+			if c.abort {
+				c.writermem.WriteHeaderNow()
+			}
 			if c.w.Written() {
 				break
 			}
