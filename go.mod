@@ -16,6 +16,6 @@ require (
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	github.com/valyala/fasttemplate v1.1.0
 	go.uber.org/atomic v1.9.0 // indirect
-	golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e
+	golang.org/x/net v0.7.0
 	google.golang.org/protobuf v1.26.0
 )
