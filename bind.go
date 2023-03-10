@@ -38,7 +38,7 @@ func (b *DefaultBinder) Bind(i interface{}, c Context) (err error) {
 		return
 	}
 
-	ctype := req.Header.Get(HeaderContentType)
+	ctype := strings.ToLower(req.Header.Get(HeaderContentType))
 	switch {
 	case strings.HasPrefix(ctype, MIMEApplicationProtobuf):
 		buf, err := ioutil.ReadAll(req.Body)

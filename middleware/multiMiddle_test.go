@@ -49,7 +49,6 @@ func CustomerMiddleware() yee.HandlerFunc {
 			c.Next()
 			return
 		}
-
 		return c.ServerError(http.StatusForbidden, "非法越权操作！")
 	}
 }

@@ -61,6 +61,10 @@ const (
 	defaultIndent = "  "
 )
 
+const (
+	StatusCodeContextCanceled = 499
+)
+
 // MIME types
 const (
 	MIMEApplicationJSON                  = "application/json"

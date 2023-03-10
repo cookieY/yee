@@ -52,7 +52,7 @@ func parserVerifyData(context yee.Context) ([]byte, error) {
 	res := context.Request()
 	if res.Header.Get(yee.HeaderAuthorization) != "" {
 		auth := strings.Split(res.Header.Get(yee.HeaderAuthorization), " ")
-		if auth[0] == basic {
+		if strings.ToLower(auth[0]) == basic {
 			decode, err := base64.StdEncoding.DecodeString(auth[1])
 			if err != nil {
 				return decode, err
