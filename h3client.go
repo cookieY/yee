@@ -3,13 +3,13 @@ package yee
 import (
 	"bytes"
 	"crypto/tls"
+	"github.com/quic-go/quic-go"
 	"io/ioutil"
 	"net/http"
 
 	"github.com/cookieY/yee/logger"
 	"github.com/golang/protobuf/proto"
-	"github.com/lucas-clemente/quic-go"
-	"github.com/lucas-clemente/quic-go/http3"
+	"github.com/quic-go/quic-go/http3"
 )
 
 type transport struct {
