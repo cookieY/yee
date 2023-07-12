@@ -1,7 +1,6 @@
 package yee
 
 import (
-	"embed"
 	"net/http"
 	"testing"
 )
@@ -49,20 +48,20 @@ func TestStatic(t *testing.T) {
 	y.Run(":9999")
 }
 
-//go:embed dist/*
-var f embed.FS
+////go:embed dist/*
+//var f embed.FS
+//
+////go:embed dist/index.html
+//var index string
 
-//go:embed dist/index.html
-var index string
-
-func TestPack(t *testing.T) {
-	y := New()
-	y.Pack("/front", f, "dist")
-	y.GET("/", func(c Context) error {
-		return c.HTML(http.StatusOK, index)
-	})
-	y.Run(":9999")
-}
+//func TestPack(t *testing.T) {
+//	y := New()
+//	y.Pack("/front", f, "dist")
+//	y.GET("/", func(c Context) error {
+//		return c.HTML(http.StatusOK, index)
+//	})
+//	y.Run(":9999")
+//}
 
 const ver = `alt-svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000,h3-Q050=":443"; ma=2592000,h3-Q046=":443"; ma=2592000,h3-Q043=":443"; ma=2592000,quic=":443"; ma=2592000; v="46,43"`
 

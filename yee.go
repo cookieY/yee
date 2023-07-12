@@ -3,7 +3,7 @@ package yee
 import (
 	"fmt"
 	"github.com/cookieY/yee/logger"
-	"github.com/lucas-clemente/quic-go/http3"
+	"github.com/quic-go/quic-go/http3"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"io"
