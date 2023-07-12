@@ -50,11 +50,14 @@ type Logger interface {
 }
 
 // LogCreator ...
-func LogCreator() Logger {
+func LogCreator(args ...int) Logger {
 	l := new(logger)
 	l.producer = New()
 	l.producer.Enable()
 	l.level = 1
+	if len(args) > 0 {
+		l.level = uint8(args[0])
+	}
 	l.out = os.Stdout
 	return l
 }
