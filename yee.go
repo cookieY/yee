@@ -3,7 +3,6 @@ package yee
 import (
 	"fmt"
 	"github.com/cookieY/yee/logger"
-	"github.com/quic-go/quic-go/http3"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"io"
@@ -39,7 +38,7 @@ type Core struct {
 	Banner                 bool
 }
 
-const version = "yee v0.4.0"
+const version = "yee v0.5.0"
 
 const creator = "Creator: Henry Yee"
 const title = "-----Easier and Faster-----"
@@ -176,11 +175,11 @@ func (c *Core) RunH2C(addr string) {
 	log.Fatal(h1s.ListenAndServe())
 }
 
-func (c *Core) RunH3(addr, ca, keyFile string) {
-	//if isTCP {
-	log.Fatal(http3.ListenAndServe(addr, ca, keyFile, c))
-	//log.Fatal(s.ListenAndServeTLS(ca, keyFile))
-}
+//func (c *Core) RunH3(addr, ca, keyFile string) {
+//	//if isTCP {
+//	log.Fatal(http3.ListenAndServe(addr, ca, keyFile, c))
+//	//log.Fatal(s.ListenAndServeTLS(ca, keyFile))
+//}
 
 func (c *Core) handleHTTPRequest(context *context) {
 	httpMethod := context.r.Method

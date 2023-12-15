@@ -124,7 +124,11 @@ func (c *context) Next() {
 	s := len(c.handlers)
 	if s > 0 {
 		for ; c.index < s; c.index++ {
-			_ = c.handlers[c.index](c)
+			err := c.handlers[c.index](c)
+			if err != nil {
+				c.Logger().Error(err.Error())
+				c.CrashWithString(http.StatusInternalServerError, err.Error())
+			}
 			if c.abort {
 				c.writermem.WriteHeaderNow()
 			}
@@ -183,6 +187,14 @@ func (c *context) CrashWithStatus(code int) {
 func (c *context) CrashWithJson(code int, json interface{}) {
 	c.Crash()
 	err := c.JSON(code, json)
+	if err != nil {
+		return
+	}
+}
+
+func (c *context) CrashWithString(code int, str string) {
+	c.Crash()
+	err := c.String(code, str)
 	if err != nil {
 		return
 	}

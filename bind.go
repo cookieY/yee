@@ -6,8 +6,9 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"github.com/go-playground/validator/v10"
 	"github.com/golang/protobuf/proto"
-	"io/ioutil"
+	"io"
 	"reflect"
 	"strconv"
 	"strings"
@@ -26,9 +27,16 @@ type (
 	}
 )
 
-// Bind implements the `Binder#Bind` function.
 func (b *DefaultBinder) Bind(i interface{}, c Context) (err error) {
+	if err := b.bind(i, c); err != nil {
+		return err
+	}
+	validate := validator.New()
+	return validate.Struct(i)
+}
 
+// Bind implements the `Binder#Bind` function.
+func (b *DefaultBinder) bind(i interface{}, c Context) (err error) {
 	req := c.Request()
 	if err = b.bindData(i, c.QueryParams(), "json"); err != nil {
 		return err
@@ -41,7 +49,7 @@ func (b *DefaultBinder) Bind(i interface{}, c Context) (err error) {
 	ctype := strings.ToLower(req.Header.Get(HeaderContentType))
 	switch {
 	case strings.HasPrefix(ctype, MIMEApplicationProtobuf):
-		buf, err := ioutil.ReadAll(req.Body)
+		buf, err := io.ReadAll(req.Body)
 		if err != nil {
 			return err
 		}
@@ -50,10 +58,9 @@ func (b *DefaultBinder) Bind(i interface{}, c Context) (err error) {
 		}
 	case strings.HasPrefix(ctype, MIMEApplicationJSON):
 		if err = json.NewDecoder(req.Body).Decode(i); err != nil {
-			if ute, ok := err.(*json.UnmarshalTypeError); ok {
+			var ute *json.UnmarshalTypeError
+			if errors.As(err, &ute) {
 				return errors.New(fmt.Sprintf("Unmarshal type error: expected=%v, got=%v, field=%v, offset=%v", ute.Type, ute.Value, ute.Field, ute.Offset))
-			} else if se, ok := err.(*json.SyntaxError); ok {
-				return errors.New(fmt.Sprintf("Syntax error: offset=%v, error=%v", se.Offset, se.Error()))
 			}
 			return err
 		}

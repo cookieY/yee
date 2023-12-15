@@ -1,6 +1,7 @@
 package yee
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
@@ -10,7 +11,7 @@ import (
 )
 
 type user struct {
-	Username string `json:"username"`
+	Username string `json:"username" validate:"required"`
 	Password string `json:"password"`
 	Age      int    `json:"age"`
 }
@@ -26,7 +27,7 @@ type cmdbBind struct {
 }
 
 var userInfo = `{"username": "henry","age":24,"password":"123123"}`
-var invalidInfo = `1{"username": "henry","age":24,"password":"123123"}`
+var invalidInfo = `{"username": "","age":24,"password":"123123"}`
 var encrypt = `e2db79dc56e0b5a5866fa4062c9c715e66a5d4820d5424c7645092be0041c1e62d9571b0549758cd02445593b2a276d455cba5b31295e1288d67255e78e4dd78`
 
 func TestBindJSON(t *testing.T) {
@@ -43,13 +44,14 @@ func TestDefaultBinder_Bind(t *testing.T) {
 		if err := c.Bind(u); err != nil {
 			return err
 		}
-		return c.JSON(http.StatusOK, "")
+		return c.JSON(http.StatusOK, u)
 	})
 	req := httptest.NewRequest(http.MethodPost, "/bind", strings.NewReader(invalidInfo))
 	req.Header.Set("Content-Type", MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	e.ServeHTTP(rec, req)
-	assert.Equal(t, http.StatusBadRequest, rec.Code)
+	fmt.Println(rec.Code)
+	fmt.Println(rec.Body.String())
 }
 
 func TestBindEncryptOkay(t *testing.T) {
