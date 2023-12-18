@@ -32,7 +32,13 @@ func (b *DefaultBinder) Bind(i interface{}, c Context) (err error) {
 		return err
 	}
 	validate := validator.New()
-	return validate.Struct(i)
+	value := reflect.ValueOf(i)
+	if value.Kind() == reflect.Ptr {
+		elem := value.Elem()
+		return validate.Struct(elem)
+	} else {
+		return validate.Struct(i)
+	}
 }
 
 // Bind implements the `Binder#Bind` function.
