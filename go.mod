@@ -19,5 +19,5 @@ require (
 	github.com/valyala/fasttemplate v1.1.0
 	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/net v0.17.0
-	google.golang.org/protobuf v1.28.0
+	google.golang.org/protobuf v1.33.0
 )
