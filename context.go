@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/cookieY/yee/logger"
 	"github.com/golang/protobuf/proto"
-	"io/ioutil"
 	"math"
 	"mime/multipart"
 	"net"
@@ -241,9 +240,9 @@ func (c *context) HTML(code int, html string) (err error) {
 }
 
 func (c *context) HTMLTpl(code int, tml string) (err error) {
-	s, e := ioutil.ReadFile(tml)
+	s, e := os.ReadFile(tml)
 	if e != nil {
-		panic(e)
+		return e
 	}
 	return c.HTMLBlob(code, s)
 }

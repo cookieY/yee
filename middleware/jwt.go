@@ -3,12 +3,10 @@ package middleware
 import (
 	"errors"
 	"fmt"
-	"net/http"
-	"reflect"
-	"strings"
-
 	"github.com/cookieY/yee"
 	"github.com/golang-jwt/jwt"
+	"net/http"
+	"reflect"
 )
 
 // JwtConfig defines the config of JWT middleware
@@ -17,7 +15,7 @@ type JwtConfig struct {
 	AuthScheme     string
 	SigningKey     interface{}
 	SigningMethod  string
-	TokenLookup    string
+	TokenLookup    []string
 	Claims         jwt.Claims
 	keyFunc        jwt.Keyfunc
 	ErrorHandler   JWTErrorHandler
@@ -39,7 +37,7 @@ var DefaultJwtConfig = JwtConfig{
 	GetKey:        "auth",
 	SigningMethod: algorithmHS256,
 	AuthScheme:    "Bearer",
-	TokenLookup:   "header:" + yee.HeaderAuthorization,
+	TokenLookup:   []string{yee.HeaderAuthorization},
 	Claims:        jwt.MapClaims{},
 }
 
@@ -62,7 +60,7 @@ func JWTWithConfig(config JwtConfig) yee.HandlerFunc {
 		config.Claims = DefaultJwtConfig.Claims
 	}
 
-	if config.TokenLookup == "" {
+	if config.TokenLookup == nil {
 		config.TokenLookup = DefaultJwtConfig.TokenLookup
 	}
 
@@ -73,15 +71,11 @@ func JWTWithConfig(config JwtConfig) yee.HandlerFunc {
 		return config.SigningKey, nil
 	}
 
-	parts := strings.Split(config.TokenLookup, ":")
-	extractor := jwtFromHeader(parts[1], config.AuthScheme)
+	extractor := jwtFromHeader(config.TokenLookup, config.AuthScheme)
 
 	return func(c yee.Context) (err error) {
 		// cause upgrade websocket  will clear custom header
 		// when header add jwt bearer that panic
-		if c.IsWebsocket() {
-			return
-		}
 		auth, err := extractor(c)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, err.Error())
@@ -108,12 +102,17 @@ func JWTWithConfig(config JwtConfig) yee.HandlerFunc {
 	}
 }
 
-func jwtFromHeader(header string, authScheme string) jwtExtractor {
+func jwtFromHeader(header []string, authScheme string) jwtExtractor {
 	return func(c yee.Context) (string, error) {
-		auth := c.Request().Header.Get(header)
-		l := len(authScheme)
-		if len(auth) > l+1 && auth[:l] == authScheme {
-			return auth[l+1:], nil
+		for _, i := range header {
+			auth := c.Request().Header.Get(i)
+			l := len(authScheme)
+			if len(auth) > l+1 && auth[:l] == authScheme {
+				return auth[l+1:], nil
+			}
+			if i == yee.HeaderSecWebSocketProtocol {
+				return auth, nil
+			}
 		}
 		return "", errors.New("missing or malformed jwt")
 	}
