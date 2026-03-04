@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/cookieY/yee/logger"
-	"github.com/golang/protobuf/proto"
 	"math"
 	"mime/multipart"
 	"net"
@@ -15,6 +13,9 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/cookieY/yee/logger"
+	"github.com/golang/protobuf/proto"
 )
 
 const crashIndex int = math.MaxInt8 / 2
@@ -223,10 +224,11 @@ func (c *context) SetResponse(w ResponseWriter) {
 
 func (c *context) RemoteIP() string {
 	if ip := c.r.Header.Get(HeaderXForwardedFor); ip != "" {
-		i := strings.IndexAny(ip, ", ")
-		if i > 0 {
-			return ip[:i]
+		i := strings.IndexByte(ip, ',')
+		if i >= 0 {
+			return strings.TrimSpace(ip[:i])
 		}
+		return strings.TrimSpace(ip) // 没有逗号就返回整个
 	}
 	if ip := c.r.Header.Get(HeaderXRealIP); ip != "" {
 		return ip
